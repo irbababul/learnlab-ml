@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Regresi Linear Berganda — LearnLab</title>
+  <link rel="stylesheet" href="../css/main.css"/>
+  <link rel="stylesheet" href="../css/lesson.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"/>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+  <style>
+    /* MLR-specific extras */
+    .mlr-highlight { background:rgba(0,212,255,0.07); border:1px solid rgba(0,212,255,0.2); border-radius:8px; padding:14px 18px; margin:14px 0; }
+    .mlr-warn      { background:rgba(245,158,11,0.07); border:1px solid rgba(245,158,11,0.25); border-radius:8px; padding:14px 18px; margin:14px 0; }
+    .mlr-success   { background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.25); border-radius:8px; padding:14px 18px; margin:14px 0; }
+    .compare-box   { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:16px 0; }
+    .compare-card  { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:16px; }
+    .compare-card h4 { font-family:'Orbitron',monospace; font-size:11px; margin-bottom:10px; }
+    .diag-grid     { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+    .diag-card     { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:16px; }
+    .diag-title    { font-family:'Orbitron',monospace; font-size:10px; letter-spacing:1px; color:var(--accent-cyan); margin-bottom:10px; }
+    .diag-stat     { display:flex; justify-content:space-between; font-size:13px; margin:5px 0; padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.05); }
+    .diag-val      { font-family:'Share Tech Mono',monospace; font-size:13px; color:var(--accent-cyan); }
+    .matrix-nav    { display:flex; gap:8px; align-items:center; margin:14px 0; flex-wrap:wrap; }
+    .metrics-table { width:100%; border-collapse:collapse; font-size:13px; }
+    .metrics-table th { background:rgba(0,212,255,0.08); color:var(--accent-cyan); padding:8px 12px; border:1px solid var(--border); font-family:'Orbitron',monospace; font-size:10px; }
+    .metrics-table td { padding:7px 12px; border:1px solid var(--border); color:var(--text-secondary); }
+    .metrics-table tr:nth-child(even) td { background:rgba(255,255,255,0.02); }
+    .live-metric   { font-family:'Share Tech Mono',monospace; font-size:20px; font-weight:700; }
+    @media(max-width:768px){ .compare-box,.diag-grid{ grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+<canvas id="bg-particles"></canvas>
+<div class="xp-popup" id="xpPopup"></div>
+
+<!-- TOP NAV -->
+<nav class="topbar" id="topbar">
+  <div class="topbar-left">
+    <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle Sidebar"><span></span><span></span><span></span></button>
+    <div class="logo">
+      <a href="../index.html" style="display:flex;align-items:center;gap:8px">
+        <span class="logo-icon">⬡</span>
+        <span class="logo-text">Learn<span class="logo-accent">Lab</span></span>
+      </a>
+    </div>
+  </div>
+  <div class="topbar-center">
+    <div class="xp-bar-wrap">
+      <span class="xp-label">XP</span>
+      <div class="xp-bar"><div class="xp-fill" id="xpFill" style="width:55%"></div></div>
+      <span class="xp-val" id="xpVal">110 / 200</span>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="player-badge">
+      <span class="player-level" id="playerLevel">Lv.1</span>
+      <span class="player-name">Pelajar</span>
+    </div>
+  </div>
+</nav>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-inner">
+    <div class="sidebar-header"><span class="sidebar-title">Peta Ilmu</span></div>
+    <div class="sidebar-search">
+      <input type="text" placeholder="Cari materi..." id="searchInput"/>
+      <span class="search-icon">🔍</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-category active" id="cat-ml">
+        <div class="nav-category-header" onclick="toggleCategory('cat-ml')">
+          <span class="cat-icon">🤖</span><span class="cat-name">Machine Learning</span>
+          <span class="cat-arrow">▾</span><span class="cat-badge unlocked">UNLOCKED</span>
+        </div>
+        <div class="nav-category-body">
+          <div class="nav-topic active" id="topic-regresi">
+            <div class="nav-topic-header" onclick="toggleTopic('topic-regresi')">
+              <span class="topic-dot done"></span>
+              <span class="topic-name">Regresi</span>
+              <span class="topic-arrow">▾</span>
+            </div>
+            <div class="nav-topic-body">
+              <a class="nav-item" href="linear-regression.html"><span class="item-icon">📈</span><span>Regresi Linear Sederhana</span><span class="item-status done">✓</span></a>
+              <a class="nav-item active" href="multiple-regression.html"><span class="item-icon">📊</span><span>Regresi Linear Berganda</span></a>
+              <a class="nav-item locked" href="#"><span class="item-icon">🔀</span><span>Regresi Logistik</span><span class="item-status lock">🔒</span></a>
+            </div>
+          </div>
+          <div class="nav-topic" id="topic-klasifikasi">
+            <div class="nav-topic-header" onclick="toggleTopic('topic-klasifikasi')">
+              <span class="topic-dot locked"></span><span class="topic-name">Klasifikasi</span><span class="topic-arrow">▾</span>
+            </div>
+            <div class="nav-topic-body" style="display:none">
+              <a class="nav-item locked" href="#"><span class="item-icon">🎯</span><span>KNN</span><span class="item-status lock">🔒</span></a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="nav-category">
+        <div class="nav-category-header locked" onclick="showLockedMsg()">
+          <span class="cat-icon">🧠</span><span class="cat-name">Deep Learning</span>
+          <span class="cat-arrow">▾</span><span class="cat-badge locked-badge">LOCKED</span>
+        </div>
+      </div>
+    </nav>
+    <div style="padding:16px;">
+      <button onclick="resetProgress()" class="ctrl-btn danger" style="width:100%;font-size:12px;">🔄 Reset Progress</button>
+    </div>
+  </div>
+</aside>
+
+<!-- LESSON CONTENT -->
+<div class="lesson-content" id="mainContent">
+
+  <!-- Hero -->
+  <div class="lesson-hero">
+    <div class="breadcrumb">
+      <a href="../index.html">🏠 Home</a><span class="breadcrumb-sep">›</span>
+      <a href="#">Machine Learning</a><span class="breadcrumb-sep">›</span>
+      <a href="#">Regresi</a><span class="breadcrumb-sep">›</span>
+      <span class="breadcrumb-current">Regresi Linear Berganda</span>
+    </div>
+    <h1 class="lesson-title">📊 Regresi Linear Berganda</h1>
+    <p class="lesson-subtitle">
+      Dari satu fitur ke banyak fitur — pelajari cara memodelkan fenomena nyata yang dipengaruhi oleh banyak variabel sekaligus, lengkap dengan visualisasi 3D, derivasi matrix, dan diagnostik model.
+    </p>
+    <div class="lesson-meta">
+      <div class="lesson-meta-item"><span>⏱️</span><span>~60 menit</span></div>
+      <div class="lesson-meta-item"><span>🎓</span><span>Lanjutan dari SLR</span></div>
+      <div class="lesson-meta-item"><span>🧮</span><span>Aljabar Matrix</span></div>
+      <div class="lesson-meta-item"><span>🎮</span><span>8 Grafik Interaktif</span></div>
+      <div class="lesson-meta-item"><span>⭐</span><span>+200 XP Total</span></div>
+    </div>
+  </div>
+
+  <!-- Chapter Tabs -->
+  <div class="chapter-tabs" id="chapterTabs">
+    <div class="chapter-tab active"  data-tab="konsep"    onclick="switchTab('konsep')"><span class="tab-num">1</span>Konsep</div>
+    <div class="chapter-tab"         data-tab="model"     onclick="switchTab('model')"><span class="tab-num">2</span>Model</div>
+    <div class="chapter-tab"         data-tab="asumsi"    onclick="switchTab('asumsi')"><span class="tab-num">3</span>Asumsi</div>
+    <div class="chapter-tab"         data-tab="derivasi"  onclick="switchTab('derivasi')"><span class="tab-num">4</span>Derivasi OLS</div>
+    <div class="chapter-tab"         data-tab="visual3d"  onclick="switchTab('visual3d')"><span class="tab-num">5</span>Visualisasi 3D</div>
+    <div class="chapter-tab"         data-tab="koefisien" onclick="switchTab('koefisien')"><span class="tab-num">6</span>Koefisien</div>
+    <div class="chapter-tab"         data-tab="evaluasi"  onclick="switchTab('evaluasi')"><span class="tab-num">7</span>Evaluasi</div>
+    <div class="chapter-tab"         data-tab="quiz"      onclick="switchTab('quiz')"><span class="tab-num">8</span>Quiz</div>
+  </div>
+
+  <!-- Body -->
+  <div class="lesson-body">
+  <div class="content-main">
+
+  <!-- ══════════════════════════════════════
+       TAB 1 — KONSEP
+       ══════════════════════════════════════ -->
+  <div class="content-section active" id="sec-konsep">
+
+    <div class="concept-block">
+      <div class="concept-title">🤔 DARI SATU KE BANYAK FITUR</div>
+      <p class="concept-text">
+        Di Regresi Linear Sederhana (SLR), kita hanya punya <strong>satu fitur x</strong> untuk memprediksi y.
+        Tapi di dunia nyata, hampir semua fenomena dipengaruhi oleh <strong>banyak faktor sekaligus</strong>.<br><br>
+        Contoh: harga rumah tidak hanya ditentukan luas bangunan saja, tapi juga jarak ke pusat kota,
+        jumlah kamar tidur, tahun dibangun, dll.
+      </p>
+    </div>
+
+    <div class="compare-box">
+      <div class="compare-card">
+        <h4 style="color:var(--accent-yellow)">SLR — 1 Fitur</h4>
+        <p class="concept-text" style="font-size:13px;">$$\hat{y} = b_0 + b_1 x_1$$</p>
+        <p class="concept-text" style="font-size:13px;margin-top:8px;">
+          Garis lurus di ruang 2D.<br>Hanya 1 predictor.
+        </p>
+      </div>
+      <div class="compare-card">
+        <h4 style="color:var(--accent-cyan)">MLR — Banyak Fitur</h4>
+        <p class="concept-text" style="font-size:13px;">$$\hat{y} = b_0 + b_1 x_1 + b_2 x_2 + \cdots + b_p x_p$$</p>
+        <p class="concept-text" style="font-size:13px;margin-top:8px;">
+          Hyperplane di ruang (p+1) dimensi.<br>p predictor sekaligus.
+        </p>
+      </div>
+    </div>
+
+    <div class="concept-block">
+      <div class="concept-title">🏠 ANALOGI NYATA — HARGA RUMAH</div>
+      <p class="concept-text">
+        Bayangkan kamu ingin prediksi harga rumah. Dengan SLR kamu pakai luas saja:
+      </p>
+      <div class="mlr-warn">
+        <strong>SLR:</strong> Harga = 2.1 × Luas + 40 &nbsp;→&nbsp; MSE = <span id="compSLRMSE">—</span>
+      </div>
+      <p class="concept-text" style="margin-top:12px;">
+        Tapi rumah yang sama bisa jauh berbeda harganya karena lokasi! Dengan MLR kita tambahkan
+        jarak ke pusat kota sebagai fitur ke-2:
+      </p>
+      <div class="mlr-success">
+        <strong>MLR:</strong> Harga = b₀ + b₁×Luas + b₂×Jarak &nbsp;→&nbsp; MSE = <span id="compMLRMSE">—</span>
+        &nbsp;<strong style="color:var(--accent-green);">(-<span id="compImprovement">—</span> lebih baik!)</strong>
+      </div>
+    </div>
+
+    <!-- Comparison chart -->
+    <div class="graph-container">
+      <div class="graph-header">
+        <div class="graph-title">📉 SLR vs MLR — PERBANDINGAN AKURASI</div>
+      </div>
+      <canvas id="mlrCompCanvas" style="width:100%;height:auto;border-radius:8px;"></canvas>
+      <p class="graph-hint">Kuning = SLR (hanya luas) &nbsp;|&nbsp; Biru = MLR (luas + jarak, x2 ditetapkan di rata-rata)</p>
+    </div>
+
+    <div class="concept-block">
+      <div class="concept-title">📌 KAPAN PAKAI MLR?</div>
+      <div class="assumption-list">
+        <div class="assumption-item"><span class="asm-icon">✅</span><div>Ada <strong>beberapa fitur</strong> yang diduga mempengaruhi target secara simultan</div></div>
+        <div class="assumption-item"><span class="asm-icon">✅</span><div>Ingin mengetahui <strong>kontribusi masing-masing fitur</strong> sambil mengontrol fitur lain</div></div>
+        <div class="assumption-item"><span class="asm-icon">✅</span><div>Hubungan antara fitur dan target <strong>linear</strong> (atau bisa dilinearkan)</div></div>
+        <div class="assumption-item"><span class="asm-icon">⚠️</span><div>Hati-hati <strong>multikolinearitas</strong>: jika fitur-fitur saling berkorelasi tinggi, estimasi koefisien jadi tidak stabil</div></div>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-top:20px;">
+      <button class="btn-nav next" style="display:inline-flex;align-items:center;gap:8px;" onclick="switchTab('model')">Lanjut: Model Matematika -></button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       TAB 2 — MODEL MATEMATIKA
+       ══════════════════════════════════════ -->
+  <div class="content-section" id="sec-model">
+
+    <div class="concept-block">
+      <div class="concept-title">📐 PERSAMAAN UMUM MLR</div>
+      <p class="concept-text">Model MLR dengan p fitur ditulis:</p>
+      <div class="formula-block">
+        <div class="formula-title">PERSAMAAN MLR</div>
+        <div>$$\hat{y} = b_0 + b_1 x_1 + b_2 x_2 + \cdots + b_p x_p = b_0 + \sum_{j=1}^{p} b_j x_j$$</div>
+        <div class="formula-desc">
+          <ul style="list-style:none;padding:0;margin-top:8px;">
+            <li>🔵 $b_0$ = intercept (nilai ŷ saat semua $x_j = 0$)</li>
+            <li>🟣 $b_j$ = koefisien fitur ke-j (efek parsial: perubahan ŷ per +1 unit $x_j$, saat fitur lain tetap)</li>
+            <li>🟢 $x_j$ = nilai fitur ke-j</li>
+            <li>📌 p = jumlah fitur (predictor)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="concept-block">
+      <div class="concept-title">🔢 NOTASI MATRIX — BENTUK KOMPAK</div>
+      <p class="concept-text">Daripada menulis p persamaan terpisah, kita pakai notasi matrix yang jauh lebih ringkas:</p>
+      <div class="formula-block">
+        <div class="formula-title">BENTUK MATRIX</div>
+        <div>$$\hat{\mathbf{y}} = \mathbf{X}\boldsymbol{\beta}$$</div>
+        <div class="formula-desc" style="margin-top:10px;">
+          Di mana:
+          $$\mathbf{X} = \begin{bmatrix}1 & x_{11} & x_{12} & \cdots & x_{1p}\\1 & x_{21} & x_{22} & \cdots & x_{2p}\\\vdots & \vdots & \vdots & \ddots & \vdots\\1 & x_{n1} & x_{n2} & \cdots & x_{np}\end{bmatrix}, \quad \boldsymbol{\beta} = \begin{bmatrix}b_0\\b_1\\b_2\\\vdots\\b_p\end{bmatrix}$$
+          <p style="margin-top:8px;">
+            <strong>X</strong> = design matrix (n×(p+1)) &nbsp;|&nbsp;
+            Kolom pertama semua 1 (untuk intercept b₀) &nbsp;|&nbsp;
+            <strong>β</strong> = vektor koefisien ((p+1)×1)
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="concept-block">
+      <div class="concept-title">🔑 INTERPRETASI KOEFISIEN — KUNCI PENTING</div>
+      <div class="mlr-highlight">
+        <strong>Ceteris Paribus:</strong> Koefisien $b_j$ mengukur efek perubahan $x_j$ terhadap $\hat{y}$
+        <em>sambil menganggap semua fitur lain tetap konstan</em>.
+        Inilah perbedaan fundamental MLR vs SLR.
+      </div>
+      <div style="overflow-x:auto;margin-top:14px;">
+        <table class="metrics-table">
+          <thead><tr><th>Koefisien</th><th>Nilai (contoh)</th><th>Interpretasi</th></tr></thead>
+          <tbody>
+            <tr><td>$b_0$ (intercept)</td><td>50.2</td><td>Harga prediksi (juta) jika luas=0 dan jarak=0 (teoritis)</td></tr>
+            <tr><td>$b_1$ (luas)</td><td>+2.47</td><td>Setiap tambah 1 m², harga naik 2.47 juta — <em>jarak dianggap tetap</em></td></tr>
+            <tr><td>$b_2$ (jarak)</td><td>-3.21</td><td>Setiap tambah 1 km, harga turun 3.21 juta — <em>luas dianggap tetap</em></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="concept-block">
+      <div class="concept-title">⚠️ STANDARDIZED COEFFICIENTS</div>
+      <p class="concept-text">
+        Raw coefficients tidak bisa langsung dibandingkan jika satuan fitur berbeda
+        (m² vs km). Untuk membandingkan <em>kekuatan relatif</em> setiap fitur, gunakan
+        <strong>standardized coefficients (beta coefficients)</strong>:
+      </p>
+      <div>$$\beta_j^* = b_j \cdot \frac{SD(x_j)}{SD(y)}$$</div>
+      <p class="concept-text" style="margin-top:10px;">
+        Feature scaling (standardisasi) juga membantu <strong>gradient descent konvergen lebih cepat</strong>
+        karena semua fitur punya skala yang sama. Lihat visualisasi di bawah:
+      </p>
+    </div>
+
+    <!-- Feature scaling viz -->
+    <div class="graph-container">
+      <div class="graph-header">
+        <div class="graph-title">🔢 VISUALISASI FEATURE SCALING</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="ctrl-btn scale-btn active" data-scale="raw" onclick="mlrSetScaleMode('raw')">Raw</button>
+          <button class="ctrl-btn scale-btn" data-scale="standardize" onclick="mlrSetScaleMode('standardize')">Z-Score</button>
+          <button class="ctrl-btn scale-btn" data-scale="minmax" onclick="mlrSetScaleMode('minmax')">Min-Max</button>
+        </div>
+      </div>
+      <canvas id="mlrScaleCanvas" style="width:100%;height:auto;border-radius:8px;"></canvas>
+      <p class="graph-hint">Strip chart: setiap titik = satu observasi. Perhatikan perbedaan skala x1 (luas ~40-90) vs x2 (jarak ~1-15)</p>
+    </div>
+
+    <div style="text-align:center;margin-top:20px;">
+      <button class="btn-nav next" style="display:inline-flex;align-items:center;gap:8px;" onclick="switchTab('asumsi')">Lanjut: Asumsi Model -></button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       TAB 3 — ASUMSI
+       ══════════════════════════════════════ -->
+  <div class="content-section" id="sec-asumsi">
+
+    <div class="concept-block">
+      <div class="concept-title">📋 ASUMSI MLR — GAUSS-MARKOV THEOREM</div>
+      <p class="concept-text">
+        OLS estimator adalah <strong>BLUE (Best Linear Unbiased Estimator)</strong> jika asumsi berikut terpenuhi.
+        Asumsi ini wajib diperiksa setelah model difit!
+      </p>
+    </div>
+
+    <div class="assumption-list">
+      <div class="assumption-item">
+        <span class="asm-icon">1️⃣</span>
+        <div>
+          <strong>Linearitas</strong> — hubungan antara fitur dan target memang linear.<br>
+          <span style="font-size:12px;color:var(--text-muted);">Cek: scatter plot residual vs fitted. Jika ada pola kurva → tidak linear.</span>
+        </div>
+      </div>
+      <div class="assumption-item">
+        <span class="asm-icon">2️⃣</span>
+        <div>
+          <strong>Independensi Residual</strong> — error antar observasi tidak saling berkorelasi.<br>
+          <span style="font-size:12px;color:var(--text-muted);">Cek: Durbin-Watson test. Penting untuk data time series.</span>
+        </div>
+      </div>
+      <div class="assumption-item">
+        <span class="asm-icon">3️⃣</span>
+        <div>
+          <strong>Homoscedasticity</strong> — variansi error konstan untuk semua nilai fitted.<br>
+          <span style="font-size:12px;color:var(--text-muted);">Cek: scale-location plot. Jika ada corong/kerucut → heteroscedastic.</span>
+        </div>
+      </div>
+      <div class="assumption-item">
+        <span class="asm-icon">4️⃣</span>
+        <div>
+          <strong>Normalitas Residual</strong> — error terdistribusi normal $e_i \sim \mathcal{N}(0, \sigma^2)$.<br>
+          <span style="font-size:12px;color:var(--text-muted);">Cek: Q-Q plot. Titik harus mendekati garis diagonal lurus.</span>
+        </div>
+      </div>
+      <div class="assumption-item">
+        <span class="asm-icon">5️⃣</span>
+        <div>
+          <strong>Tidak Ada Multikolinearitas</strong> — fitur-fitur tidak berkorelasi terlalu tinggi satu sama lain.<br>
+          <span style="font-size:12px;color:var(--text-muted);">Cek: VIF (Variance Inflation Factor). VIF > 10 = masalah serius, VIF > 5 = perlu perhatian.</span>
+        </div>
+      </div>
+      <div class="assumption-item">
+        <span class="asm-icon">6️⃣</span>
+        <div>
+          <strong>Tidak Ada Outlier Ekstrem</strong> — observasi ekstrem bisa mendistorsi koefisien.<br>
+          <span style="font-size:12px;color:var(--text-muted);">Cek: Cook's Distance, leverage points.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="mlr-highlight" style="margin-top:16px;">
+      <strong>Tips untuk Pemula:</strong> Asumsi bukan syarat mutlak sebelum fitting — fit dulu modelnya,
+      baru periksa asumsi dari residualnya. Jika asumsi dilanggar, ada cara-cara untuk memperbaikinya
+      (transformasi data, robust regression, dll).
+    </div>
+
+    <div style="text-align:center;margin-top:20px;">
+      <button class="btn-nav next" style="display:inline-flex;align-items:center;gap:8px;" onclick="switchTab('derivasi')">Lanjut: Derivasi OLS -></button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       TAB 4 — DERIVASI OLS MATRIX
+       ══════════════════════════════════════ -->
+  <div class="content-section" id="sec-derivasi">
+
+    <div class="concept-block">
+      <div class="concept-title">📐 ORDINARY LEAST SQUARES — SOLUSI MATRIX</div>
+      <p class="concept-text">
+        Tujuan OLS: cari <strong>β</strong> yang meminimalkan total kuadrat residual.
+        Dengan notasi matrix, ini sangat elegan.
+      </p>
+    </div>
+
+    <!-- OLS Derivation Steps -->
+    <div class="derivation-box" id="deriv-mlr-ols">
+      <div class="derivation-header">
+        <div class="derivation-title">DERIVASI OLS — NOTASI MATRIX</div>
+        <div class="deriv-controls">
+          <button class="deriv-btn" onclick="derivPrev('deriv-mlr-ols')" id="prev-deriv-mlr-ols">← Prev</button>
+          <span class="deriv-counter" id="counter-deriv-mlr-ols">1 / 7</span>
+          <button class="deriv-btn primary" onclick="derivNext('deriv-mlr-ols')" id="next-deriv-mlr-ols">Next →</button>
+          <button class="deriv-btn auto" id="auto-deriv-mlr-ols" onclick="derivAutoPlay('deriv-mlr-ols')">▶ Auto</button>
+          <button class="deriv-btn reset" onclick="derivReset('deriv-mlr-ols')">↺</button>
+        </div>
+      </div>
+
+      <div class="d-step d-visible"><div class="step-badge">1</div><div class="step-body">
+        <div class="step-label">Fungsi cost dalam notasi matrix</div>
+        <div>$$J(\boldsymbol{\beta}) = \|\mathbf{y} - \mathbf{X}\boldsymbol{\beta}\|^2 = (\mathbf{y} - \mathbf{X}\boldsymbol{\beta})^T(\mathbf{y} - \mathbf{X}\boldsymbol{\beta})$$</div>
+        <div class="step-note">||·||² adalah norma Euclidean kuadrat — sama dengan menjumlahkan semua residual kuadrat. Notasi ini setara dengan MSE × n.</div>
+      </div></div>
+
+      <div class="d-step d-hidden"><div class="step-badge">2</div><div class="step-body">
+        <div class="step-label">Ekspansi kuadratik</div>
+        <div>$$J(\boldsymbol{\beta}) = \mathbf{y}^T\mathbf{y} - 2\boldsymbol{\beta}^T\mathbf{X}^T\mathbf{y} + \boldsymbol{\beta}^T\mathbf{X}^T\mathbf{X}\boldsymbol{\beta}$$</div>
+        <div class="step-note">Ekspansi $(a-b)^T(a-b) = a^Ta - 2b^Ta + b^Tb$ dengan $a=\mathbf{y}$, $b=\mathbf{X}\boldsymbol{\beta}$. Gunakan sifat transpose: $(AB)^T = B^TA^T$.</div>
+      </div></div>
+
+      <div class="d-step d-hidden"><div class="step-badge">3</div><div class="step-body">
+        <div class="step-label">Turunan terhadap β (gradient matrix)</div>
+        <div>$$\frac{\partial J}{\partial \boldsymbol{\beta}} = -2\mathbf{X}^T\mathbf{y} + 2\mathbf{X}^T\mathbf{X}\boldsymbol{\beta}$$</div>
+        <div class="step-note">Aturan turunan matrix: $\frac{\partial}{\partial\beta}(\beta^T A y) = Ay$ dan $\frac{\partial}{\partial\beta}(\beta^T A \beta) = 2A\beta$ jika A simetris.</div>
+      </div></div>
+
+      <div class="d-step d-hidden"><div class="step-badge">4</div><div class="step-body">
+        <div class="step-label">Set gradient = 0 (syarat minimum)</div>
+        <div>$$-2\mathbf{X}^T\mathbf{y} + 2\mathbf{X}^T\mathbf{X}\boldsymbol{\beta} = \mathbf{0}$$</div>
+        <div>$$\mathbf{X}^T\mathbf{X}\boldsymbol{\beta} = \mathbf{X}^T\mathbf{y}$$</div>
+        <div class="step-note">Ini disebut <strong>Normal Equations</strong> — sistem p+1 persamaan linear untuk p+1 unknown (β₀, β₁, ..., βₚ).</div>
+      </div></div>
+
+      <div class="d-step d-hidden"><div class="step-badge">5</div><div class="step-body">
+        <div class="step-label">Verifikasi ini adalah minimum (bukan maksimum)</div>
+        <div>$$\frac{\partial^2 J}{\partial \boldsymbol{\beta}^2} = 2\mathbf{X}^T\mathbf{X}$$</div>
+        <div class="step-note">$\mathbf{X}^T\mathbf{X}$ adalah matriks <strong>positive semi-definite</strong> (semua eigenvalue ≥ 0). Jika X full rank → positive definite → J convex → titik kritis adalah minimum global unik.</div>
+      </div></div>
+
+      <div class="d-step d-hidden"><div class="step-badge">6</div><div class="step-body">
+        <div class="step-label">Selesaikan Normal Equations</div>
+        <div>$$\hat{\boldsymbol{\beta}} = (\mathbf{X}^T\mathbf{X})^{-1}\mathbf{X}^T\mathbf{y}$$</div>
+        <div class="step-note">Syarat: $\mathbf{X}^T\mathbf{X}$ harus invertible (full rank). Jika tidak invertible → ada multikolinearitas sempurna di antara fitur-fitur.</div>
+      </div></div>
+
+      <div class="d-step d-hidden"><div class="step-badge result">7 ✓</div><div class="step-body">
+        <div class="step-label result-label">✅ SOLUSI OLS LENGKAP</div>
+        <div>$$\boxed{\hat{\boldsymbol{\beta}} = (\mathbf{X}^T\mathbf{X})^{-1}\mathbf{X}^T\mathbf{y}}$$</div>
+        <div class="step-note result-note">
+          Ini adalah solusi closed-form yang memberikan koefisien optimal secara analitik!<br>
+          Kompleksitas komputasi: O(p²n + p³) — untuk p besar, lebih efisien pakai iterative solvers.
+        </div>
+      </div></div>
+    </div>
+
+    <!-- Matrix Calculator Visual -->
+    <div class="graph-container">
+      <div class="graph-header">
+        <div class="graph-title">🔢 VISUALISASI MATRIX — LIHAT DATA ASLI</div>
+      </div>
+      <div class="matrix-nav">
+        <button class="deriv-btn" onclick="mlrMatrixPrev()">← Prev</button>
+        <span class="deriv-counter" id="mlrMatrixStep">1/4</span>
+        <button class="deriv-btn primary" onclick="mlrMatrixNext()">Next →</button>
+        <button class="deriv-btn reset" onclick="mlrMatrixReset()">↺ Reset</button>
+        <span style="font-size:12px;color:var(--text-muted);margin-left:8px;" id="mlrMatrixTitle">X (design matrix)</span>
+      </div>
+      <canvas id="mlrMatrixCanvas" style="width:100%;height:auto;border-radius:8px;"></canvas>
+      <p class="graph-hint">Data asli 30 observasi rumah: x1=luas, x2=jarak, y=harga</p>
+    </div>
+
+    <div style="text-align:center;margin-top:20px;">
+      <button class="btn-nav next" style="display:inline-flex;align-items:center;gap:8px;" onclick="switchTab('visual3d')">Lanjut: Visualisasi 3D -></button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       TAB 5 — VISUALISASI 3D
+       ══════════════════════════════════════ -->
+  <div class="content-section" id="sec-visual3d">
+
+    <div class="concept-block">
+      <div class="concept-title">🏔️ REGRESSION PLANE — BUKAN LAGI GARIS!</div>
+      <p class="concept-text">
+        Dengan 2 fitur, model MLR membentuk sebuah <strong>bidang (plane)</strong> di ruang 3D,
+        bukan garis di ruang 2D. Titik-titik data tersebar di sekitar bidang ini.
+        Residual = jarak vertikal tiap titik ke bidang.<br><br>
+        Drag grafik untuk rotasi. Geser slider untuk mengubah koefisien secara real-time!
+      </p>
+    </div>
+
+    <div class="graph-container">
+      <div class="graph-header">
+        <div class="graph-title">🏔️ 3D SCATTER + REGRESSION PLANE</div>
+        <button class="ctrl-btn" id="btnMlrAutoRot" onclick="mlr3dToggleAutoRot()">Pause Rotasi</button>
+      </div>
+      <canvas id="mlr3dCanvas" style="width:100%;height:auto;cursor:grab;border-radius:8px;"></canvas>
+      <p class="graph-hint">Drag untuk rotasi manual &nbsp;|&nbsp; Merah = residual positif (under-predict) &nbsp;|&nbsp; Hijau = residual negatif</p>
+    </div>
+
+    <!-- Sliders -->
+    <div class="graph-container" style="margin-top:16px;">
+      <div class="graph-header"><div class="graph-title">🎚️ KENDALI KOEFISIEN — REAL-TIME</div></div>
+      <div class="gd-controls-grid" style="grid-template-columns:1fr 1fr 1fr;">
+        <div class="gd-ctrl-group">
+          <div class="ctrl-label">b₀ (intercept) <span id="mlrB0Val" style="color:var(--accent-cyan);font-family:monospace;">—</span></div>
+          <input type="range" id="mlrB0Slider" min="20" max="80" step="0.5" value="50" oninput="mlr3dSetB0(this.value)"/>
+        </div>
+        <div class="gd-ctrl-group">
+          <div class="ctrl-label">b₁ (luas) <span id="mlrB1Val" style="color:var(--accent-cyan);font-family:monospace;">—</span></div>
+          <input type="range" id="mlrB1Slider" min="0.5" max="5.0" step="0.05" value="2.5" oninput="mlr3dSetB1(this.value)"/>
+        </div>
+        <div class="gd-ctrl-group">
+          <div class="ctrl-label">b₂ (jarak) <span id="mlrB2Val" style="color:var(--accent-cyan);font-family:monospace;">—</span></div>
+          <input type="range" id="mlrB2Slider" min="-8" max="0" step="0.05" value="-3.2" oninput="mlr3dSetB2(this.value)"/>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;">
+        <button class="btn-gd start" onclick="mlr3dFitOLS()">🎯 Fit OLS Optimal</button>
+        <button class="ctrl-btn" onclick="mlr3dTogglePlane()">👁️ Toggle Bidang</button>
+        <button class="ctrl-btn" onclick="mlr3dToggleResiduals()">〜 Toggle Residual</button>
+      </div>
+
+      <div class="graph-info-grid" style="margin-top:14px;">
+        <div class="info-box"><div class="info-label">MSE saat ini</div><div class="info-val yellow" id="mlrLiveMSE">—</div></div>
+        <div class="info-box"><div class="info-label">RMSE</div><div class="info-val cyan" id="mlrLiveRMSE">—</div></div>
+        <div class="info-box"><div class="info-label">R² saat ini</div><div class="info-val green" id="mlrLiveR2">—</div></div>
+      </div>
+      <div class="graph-info-grid" style="margin-top:10px;">
+        <div class="info-box"><div class="info-label">b₀ optimal (OLS)</div><div class="info-val purple" id="mlrOptB0">—</div></div>
+        <div class="info-box"><div class="info-label">b₁ optimal</div><div class="info-val cyan" id="mlrOptB1">—</div></div>
+        <div class="info-box"><div class="info-label">b₂ optimal</div><div class="info-val cyan" id="mlrOptB2">—</div></div>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-top:20px;">
+      <button class="btn-nav next" style="display:inline-flex;align-items:center;gap:8px;" onclick="switchTab('koefisien')">Lanjut: Interpretasi Koefisien -></button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       TAB 6 — KOEFISIEN & INTERPRETASI
+       ══════════════════════════════════════ -->
+  <div class="content-section" id="sec-koefisien">
+
+    <div class="concept-block">
+      <div class="concept-title">🔎 PARTIAL REGRESSION PLOTS</div>
+      <p class="concept-text">
+        <strong>Partial regression plot</strong> (added variable plot) menunjukkan hubungan antara
+        satu fitur dan target <em>setelah efek fitur lain dihilangkan</em>.
+        Ini adalah cara terbaik untuk memvisualisasikan koefisien MLR secara individual.
+      </p>
+    </div>
+
+    <div class="compare-box">
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div class="mini-graph-title">Efek x1 (luas) — b₁</div>
+        <canvas id="mlrCoeffB1Canvas" style="width:100%;height:auto;border-radius:8px;"></canvas>
+        <p class="graph-caption">Slope garis = b₁ &nbsp;|&nbsp; Panah = efek +1 unit x1 terhadap ŷ (saat x2 tetap)</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div class="mini-graph-title">Efek x2 (jarak) — b₂</div>
+        <canvas id="mlrCoeffB2Canvas" style="width:100%;height:auto;border-radius:8px;"></canvas>
+        <p class="graph-caption">Slope garis = b₂ (negatif!) &nbsp;|&nbsp; Semakin jauh, harga semakin turun</p>
+      </div>
+    </div>
+
+    <div class="concept-block">
+      <div class="concept-title">📊 HASIL OLS LENGKAP</div>
+      <div style="overflow-x:auto;">
+        <table class="metrics-table">
+          <thead><tr><th>Parameter</th><th>Nilai Estimasi</th><th>Interpretasi</th></tr></thead>
+          <tbody>
+            <tr><td>b₀ (Intercept)</td><td style="font-family:monospace;color:var(--accent-cyan);" id="koefB0">—</td><td>Harga dasar saat luas=0, jarak=0</td></tr>
+            <tr><td>b₁ (Luas m²)</td><td style="font-family:monospace;color:var(--accent-cyan);" id="koefB1">—</td><td>+1 m² → harga naik sebesar ini (ceteris paribus)</td></tr>
+            <tr><td>b₂ (Jarak km)</td><td style="font-family:monospace;color:var(--accent-cyan);" id="koefB2">—</td><td>+1 km → harga turun sebesar ini (ceteris paribus)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="concept-block">
+      <div class="concept-title">🎯 CONTOH PREDIKSI</div>
+      <p class="concept-text">Dengan model yang sudah difit, coba prediksi secara interaktif:</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0;">
+        <div class="gd-ctrl-group">
+          <div class="ctrl-label">Luas (m²): <span id="predX1Val" style="color:var(--accent-cyan);font-family:monospace;">65</span></div>
+          <input type="range" id="predX1" min="40" max="95" step="1" value="65" oninput="updatePrediction()"/>
+        </div>
+        <div class="gd-ctrl-group">
+          <div class="ctrl-label">Jarak (km): <span id="predX2Val" style="color:var(--accent-cyan);font-family:monospace;">5</span></div>
+          <input type="range" id="predX2" min="1" max="16" step="0.5" value="5" oninput="updatePrediction()"/>
+        </div>
+      </div>
+      <div class="mlr-success" style="text-align:center;">
+        <div style="font-size:13px;color:var(--text-muted);margin-bottom:4px;">Prediksi Harga Rumah:</div>
+        <div class="live-metric" id="predResult" style="color:var(--accent-green);">— juta Rp</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:6px;" id="predFormula">ŷ = —</div>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-top:20px;">
+      <button class="btn-nav next" style="display:inline-flex;align-items:center;gap:8px;" onclick="switchTab('evaluasi')">Lanjut: Evaluasi Model -></button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       TAB 7 — EVALUASI & DIAGNOSTIK
+       ══════════════════════════════════════ -->
+  <div class="content-section" id="sec-evaluasi">
+
+    <!-- Metrics summary -->
+    <div class="concept-block">
+      <div class="concept-title">📏 METRIK EVALUASI MLR</div>
+      <div class="graph-info-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px;">
+        <div class="info-box"><div class="info-label">R²</div><div class="info-val cyan" id="mlrOptR2">—</div></div>
+        <div class="info-box"><div class="info-label">Adjusted R²</div><div class="info-val green" id="mlrOptR2adj">—</div></div>
+        <div class="info-box"><div class="info-label">RMSE</div><div class="info-val purple" id="mlrOptRMSE">—</div></div>
+        <div class="info-box"><div class="info-label">MAE</div><div class="info-val yellow" id="mlrOptMAE">—</div></div>
+      </div>
+    </div>
+
+    <div class="concept-block">
+      <div class="concept-title">⚠️ ADJUSTED R² — KENAPA PENTING?</div>
+      <p class="concept-text">
+        <strong>Masalah dengan R² biasa:</strong> R² selalu naik jika kita tambah fitur baru,
+        bahkan fitur acak yang tidak relevan sekalipun! Ini bisa membuat model terlihat lebih baik
+        padahal tidak.
+      </p>
+      <div class="formula-block">
+        <div class="formula-title">ADJUSTED R²</div>
+        <div>$$R^2_{adj} = 1 - \frac{(1-R^2)(n-1)}{n-p-1}$$</div>
+        <div class="formula-desc">
+          n = jumlah observasi &nbsp;|&nbsp; p = jumlah fitur<br>
+          Adjusted R² <strong>memberikan penalti</strong> untuk setiap fitur tambahan.
+          Hanya naik jika fitur baru benar-benar meningkatkan model melebihi penaltinya.
+        </div>
+      </div>
+      <div class="mlr-warn" style="margin-top:12px;">
+        <strong>Rule of thumb:</strong> Jika $R^2_{adj}$ turun saat kamu tambah fitur baru → fitur itu tidak berguna, hapus saja!
+      </div>
+    </div>
+
+    <!-- Diagnostics -->
+    <div class="concept-block">
+      <div class="concept-title">🔬 DIAGNOSTIK MODEL — CEK ASUMSI</div>
+      <p class="concept-text">Setelah fit model, selalu periksa 4 plot diagnostik berikut:</p>
+    </div>
+
+    <div class="diag-grid">
+      <!-- Residual vs Fitted -->
+      <div class="diag-card">
+        <div class="diag-title">1. RESIDUAL vs FITTED</div>
+        <canvas id="mlrResidPlot" style="width:100%;height:auto;border-radius:8px;"></canvas>
+        <div class="diag-stat"><span>Mean Residual</span><span class="diag-val" id="diagMeanResid">—</span></div>
+        <div class="diag-stat"><span>Std Residual</span><span class="diag-val" id="diagStdResid">—</span></div>
+        <div class="diag-stat"><span>Outlier (>2σ)</span><span class="diag-val" id="diagOutliers">—</span></div>
+        <p style="font-size:11px;color:var(--text-muted);margin-top:8px;">Ideal: titik tersebar acak tanpa pola di sekitar y=0</p>
+      </div>
+      <!-- Q-Q Plot -->
+      <div class="diag-card">
+        <div class="diag-title">2. Q-Q PLOT (NORMALITAS)</div>
+        <canvas id="mlrQQPlot" style="width:100%;height:auto;border-radius:8px;"></canvas>
+        <div class="diag-stat"><span>Normalitas</span><span class="diag-val" id="diagNormality">—</span></div>
+        <div class="diag-stat"><span>Max Deviasi</span><span class="diag-val" id="diagMaxDev">—</span></div>
+        <p style="font-size:11px;color:var(--text-muted);margin-top:8px;">Ideal: semua titik mengikuti garis diagonal biru</p>
+      </div>
+      <!-- VIF -->
+      <div class="diag-card">
+        <div class="diag-title">3. VIF (MULTIKOLINEARITAS)</div>
+        <canvas id="mlrVIFCanvas" style="width:100%;height:auto;border-radius:8px;"></canvas>
+        <div class="diag-stat"><span>VIF x1</span><span class="diag-val" id="diagVIF1">—</span></div>
+        <div class="diag-stat"><span>VIF x2</span><span class="diag-val" id="diagVIF2">—</span></div>
+        <div class="diag-stat"><span>Korelasi x1-x2</span><span class="diag-val" id="diagCorr">—</span></div>
+        <div class="diag-stat"><span>Status</span><span class="diag-val" id="diagMCStatus">—</span></div>
+        <p style="font-size:11px;color:var(--text-muted);margin-top:8px;">VIF < 5: OK &nbsp;| VIF 5-10: perhatian &nbsp;| VIF > 10: masalah serius</p>
+      </div>
+      <!-- Homoscedasticity -->
+      <div class="diag-card">
+        <div class="diag-title">4. HOMOSCEDASTICITY</div>
+        <canvas id="mlrHomoCanvas" style="width:100%;height:auto;border-radius:8px;"></canvas>
+        <div class="diag-stat"><span>Status</span><span class="diag-val" id="diagHomoStatus">—</span></div>
+        <p style="font-size:11px;color:var(--text-muted);margin-top:8px;">Ideal: garis kuning datar (variansi konstan)</p>
+      </div>
+    </div>
+
+    <div class="concept-block">
+      <div class="concept-title">📚 OVERFITTING VS UNDERFITTING</div>
+      <div class="compare-box">
+        <div class="compare-card">
+          <h4 style="color:var(--accent-red)">Overfitting</h4>
+          <p class="concept-text" style="font-size:13px;">
+            Model terlalu kompleks (terlalu banyak fitur) — hafal data training tapi buruk di data baru.
+            R² tinggi di training, tapi buruk di test set.
+          </p>
+          <div class="info-chips" style="margin-top:8px;">
+            <span class="chip chip-red">Solusi: Regularisasi (Ridge/Lasso)</span>
+            <span class="chip chip-red">Cross-validation</span>
+            <span class="chip chip-red">Kurangi fitur</span>
+          </div>
+        </div>
+        <div class="compare-card">
+          <h4 style="color:var(--accent-yellow)">Underfitting</h4>
+          <p class="concept-text" style="font-size:13px;">
+            Model terlalu sederhana — tidak bisa menangkap pola dalam data.
+            R² rendah di training dan test set.
+          </p>
+          <div class="info-chips" style="margin-top:8px;">
+            <span class="chip chip-yellow">Solusi: Tambah fitur relevan</span>
+            <span class="chip chip-yellow">Feature engineering</span>
+            <span class="chip chip-yellow">Model lebih kompleks</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-top:20px;">
+      <button class="btn-nav next" style="display:inline-flex;align-items:center;gap:8px;" onclick="switchTab('quiz')">Lanjut: Quiz -></button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       TAB 8 — QUIZ
+       ══════════════════════════════════════ -->
+  <div class="content-section" id="sec-quiz">
+
+    <div class="concept-block">
+      <div class="concept-title">🏆 UJI PEMAHAMAN — 6 SOAL</div>
+      <p class="concept-text">Setiap benar = +25 XP. Skor 5-6 → Badge MLR Master!</p>
+    </div>
+
+    <!-- Q1 -->
+    <div class="quiz-box">
+      <div class="quiz-title">SOAL 1 / 6</div>
+      <div class="quiz-question">
+        Model MLR: $\hat{y} = 10 + 3x_1 - 2x_2$. Jika $x_1=5$ dan $x_2=4$, berapa prediksi $\hat{y}$?
+      </div>
+      <div class="quiz-options" id="q1opts">
+        <div class="quiz-opt" onclick="answerQuiz('q1',this,false)">a) 17</div>
+        <div class="quiz-opt" data-correct="1" onclick="answerQuiz('q1',this,true)">b) 17 (10+15-8=17)</div>
+        <div class="quiz-opt" onclick="answerQuiz('q1',this,false)">c) 21</div>
+        <div class="quiz-opt" onclick="answerQuiz('q1',this,false)">d) 9</div>
+      </div>
+      <div class="quiz-feedback" id="q1fb"></div>
+    </div>
+
+    <!-- Q2 -->
+    <div class="quiz-box">
+      <div class="quiz-title">SOAL 2 / 6</div>
+      <div class="quiz-question">
+        Dalam MLR, koefisien $b_j$ diinterpretasikan sebagai:
+      </div>
+      <div class="quiz-options" id="q2opts">
+        <div class="quiz-opt" onclick="answerQuiz('q2',this,false)">a) Perubahan y jika x_j naik 1 unit, tanpa mempertimbangkan fitur lain</div>
+        <div class="quiz-opt" data-correct="1" onclick="answerQuiz('q2',this,true)">b) Perubahan y jika x_j naik 1 unit, sementara semua fitur lain tetap (ceteris paribus)</div>
+        <div class="quiz-opt" onclick="answerQuiz('q2',this,false)">c) Korelasi antara x_j dan y</div>
+        <div class="quiz-opt" onclick="answerQuiz('q2',this,false)">d) Kontribusi x_j terhadap total variansi y</div>
+      </div>
+      <div class="quiz-feedback" id="q2fb"></div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="quiz-box">
+      <div class="quiz-title">SOAL 3 / 6</div>
+      <div class="quiz-question">
+        Solusi OLS untuk MLR dalam notasi matrix adalah:
+      </div>
+      <div class="quiz-options" id="q3opts">
+        <div class="quiz-opt" onclick="answerQuiz('q3',this,false)">a) $\hat{\beta} = \mathbf{X}\mathbf{y}$</div>
+        <div class="quiz-opt" data-correct="1" onclick="answerQuiz('q3',this,true)">b) $\hat{\beta} = (\mathbf{X}^T\mathbf{X})^{-1}\mathbf{X}^T\mathbf{y}$</div>
+        <div class="quiz-opt" onclick="answerQuiz('q3',this,false)">c) $\hat{\beta} = \mathbf{X}^T(\mathbf{X}\mathbf{X}^T)^{-1}\mathbf{y}$</div>
+        <div class="quiz-opt" onclick="answerQuiz('q3',this,false)">d) $\hat{\beta} = (\mathbf{X}^T)^{-1}\mathbf{y}$</div>
+      </div>
+      <div class="quiz-feedback" id="q3fb"></div>
+    </div>
+
+    <!-- Q4 -->
+    <div class="quiz-box">
+      <div class="quiz-title">SOAL 4 / 6</div>
+      <div class="quiz-question">
+        Adjusted R² berbeda dari R² biasa karena:
+      </div>
+      <div class="quiz-options" id="q4opts">
+        <div class="quiz-opt" onclick="answerQuiz('q4',this,false)">a) Adjusted R² selalu lebih tinggi dari R²</div>
+        <div class="quiz-opt" onclick="answerQuiz('q4',this,false)">b) Adjusted R² mengukur akurasi prediksi, bukan goodness of fit</div>
+        <div class="quiz-opt" data-correct="1" onclick="answerQuiz('q4',this,true)">c) Adjusted R² memberikan penalti untuk setiap fitur tambahan yang tidak informatif</div>
+        <div class="quiz-opt" onclick="answerQuiz('q4',this,false)">d) Adjusted R² hanya berlaku untuk model dengan 2 fitur</div>
+      </div>
+      <div class="quiz-feedback" id="q4fb"></div>
+    </div>
+
+    <!-- Q5 -->
+    <div class="quiz-box">
+      <div class="quiz-title">SOAL 5 / 6</div>
+      <div class="quiz-question">
+        VIF (Variance Inflation Factor) = 8.5 untuk fitur x₁. Artinya:
+      </div>
+      <div class="quiz-options" id="q5opts">
+        <div class="quiz-opt" onclick="answerQuiz('q5',this,false)">a) Tidak ada masalah, nilai VIF 8.5 sangat baik</div>
+        <div class="quiz-opt" data-correct="1" onclick="answerQuiz('q5',this,true)">b) Ada multikolinearitas sedang — variansi estimasi b₁ membesar 8.5x dibanding jika tidak ada kolinearitas</div>
+        <div class="quiz-opt" onclick="answerQuiz('q5',this,false)">c) x₁ tidak berkorelasi dengan y sama sekali</div>
+        <div class="quiz-opt" onclick="answerQuiz('q5',this,false)">d) Model harus segera dibuang karena VIF > 5</div>
+      </div>
+      <div class="quiz-feedback" id="q5fb"></div>
+    </div>
+
+    <!-- Q6 -->
+    <div class="quiz-box">
+      <div class="quiz-title">SOAL 6 / 6</div>
+      <div class="quiz-question">
+        Kolom pertama dari design matrix <strong>X</strong> berisi semua nilai 1. Tujuannya adalah:
+      </div>
+      <div class="quiz-options" id="q6opts">
+        <div class="quiz-opt" onclick="answerQuiz('q6',this,false)">a) Untuk membuat X'X lebih mudah diinvers</div>
+        <div class="quiz-opt" data-correct="1" onclick="answerQuiz('q6',this,true)">b) Supaya intercept b₀ bisa dimasukkan ke dalam persamaan matrix β = (X'X)⁻¹X'y</div>
+        <div class="quiz-opt" onclick="answerQuiz('q6',this,false)">c) Syarat standarisasi data dalam regresi</div>
+        <div class="quiz-opt" onclick="answerQuiz('q6',this,false)">d) Untuk memastikan semua fitur punya skala yang sama</div>
+      </div>
+      <div class="quiz-feedback" id="q6fb"></div>
+    </div>
+
+    <div id="quizFinal" style="display:none;" class="concept-block">
+      <div class="concept-title">HASIL QUIZ</div>
+      <p class="concept-text" id="quizFinalMsg"></p>
+    </div>
+
+  </div><!-- end sec-quiz -->
+
+  <!-- Prev / Next Navigation -->
+  <div class="lesson-nav">
+    <button class="btn-nav prev" id="btnPrev" onclick="goPrev()" disabled><- Sebelumnya</button>
+    <button class="btn-nav next" id="btnNext" onclick="goNext()">Lanjut -></button>
+  </div>
+
+  </div><!-- end content-main -->
+
+  <!-- Right Sidebar -->
+  <aside class="lesson-sidebar">
+    <div class="toc-box">
+      <div class="toc-title">DAFTAR ISI</div>
+      <ul class="toc-list">
+        <li><div class="toc-link" data-tab="konsep"    onclick="switchTab('konsep')">1. Konsep & Motivasi</div></li>
+        <li><div class="toc-link" data-tab="model"     onclick="switchTab('model')">2. Model Matematika</div></li>
+        <li><div class="toc-link" data-tab="asumsi"    onclick="switchTab('asumsi')">3. Asumsi Model</div></li>
+        <li><div class="toc-link" data-tab="derivasi"  onclick="switchTab('derivasi')">4. Derivasi OLS Matrix</div></li>
+        <li><div class="toc-link" data-tab="visual3d"  onclick="switchTab('visual3d')">5. Visualisasi 3D</div></li>
+        <li><div class="toc-link" data-tab="koefisien" onclick="switchTab('koefisien')">6. Koefisien & Prediksi</div></li>
+        <li><div class="toc-link" data-tab="evaluasi"  onclick="switchTab('evaluasi')">7. Evaluasi & Diagnostik</div></li>
+        <li><div class="toc-link" data-tab="quiz"      onclick="switchTab('quiz')">8. Quiz</div></li>
+      </ul>
+    </div>
+    <div class="toc-box">
+      <div class="toc-title">PROGRESS</div>
+      <div style="margin-bottom:8px;">
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-muted);margin-bottom:4px;">
+          <span>Regresi Berganda</span><span id="progressPct">0%</span>
+        </div>
+        <div style="height:8px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden;">
+          <div id="progressBar" style="height:100%;background:var(--gradient-main);border-radius:4px;width:0%;transition:width .5s;"></div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);" id="progressSubtext">0 dari 8 bab</div>
+    </div>
+    <div class="achievement-box">
+      <div class="ach-title">PENCAPAIAN</div>
+      <div class="ach-item locked-ach" id="ach1">
+        <div class="ach-icon">🔢</div>
+        <div class="ach-info"><div class="ach-name">Matrix Wizard</div><div class="ach-desc">Selesaikan derivasi OLS matrix</div></div>
+      </div>
+      <div class="ach-item locked-ach" id="ach2">
+        <div class="ach-icon">🏔️</div>
+        <div class="ach-info"><div class="ach-name">3D Explorer</div><div class="ach-desc">Fit OLS di grafik 3D</div></div>
+      </div>
+      <div class="ach-item locked-ach" id="ach3">
+        <div class="ach-icon">🔬</div>
+        <div class="ach-info"><div class="ach-name">Diagnostician</div><div class="ach-desc">Buka tab Evaluasi</div></div>
+      </div>
+      <div class="ach-item locked-ach" id="ach4">
+        <div class="ach-icon">🏆</div>
+        <div class="ach-info"><div class="ach-name">MLR Master</div><div class="ach-desc">Skor quiz >= 5/6</div></div>
+      </div>
+    </div>
+  </aside>
+
+  </div><!-- end lesson-body -->
+</div><!-- end lesson-content -->
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+<div class="toast" id="toast"></div>
+
+<!-- Scripts -->
+<script src="../js/main.js"></script>
+<script src="../js/particles.js"></script>
+<script src="../js/multiple-regression.js"></script>
+<script src="../js/mlr-math.js"></script>
+<script src="../js/mlr-diagnostics.js"></script>
+<script src="../js/lesson-logic.js"></script>
+<script>
+// MLR-specific tab config — override lesson-logic constants
+const TAB_ORDER   = ['konsep','model','asumsi','derivasi','visual3d','koefisien','evaluasi','quiz'];
+const TAB_SECTIONS= {konsep:'sec-konsep',model:'sec-model',asumsi:'sec-asumsi',derivasi:'sec-derivasi',
+  visual3d:'sec-visual3d',koefisien:'sec-koefisien',evaluasi:'sec-evaluasi',quiz:'sec-quiz'};
+const TAB_XP      = {konsep:10,model:15,asumsi:15,derivasi:30,visual3d:25,koefisien:25,evaluasi:25,quiz:30};
+const TAB_LABELS  = {konsep:'Konsep',model:'Model',asumsi:'Asumsi',derivasi:'Derivasi OLS',
+  visual3d:'Visualisasi 3D',koefisien:'Koefisien',evaluasi:'Evaluasi',quiz:'Quiz'};
+
+// Override switchTab to init MLR canvases
+const _origSwitch = window.switchTab;
+window.switchTab = function(tabId, skipSave) {
+  _origSwitch && _origSwitch(tabId, skipSave);
+  if (tabId==='konsep'    && !window._mlrCompInit)  { window._mlrCompInit=true;  initMLRComp(); }
+  if (tabId==='model'     && !window._mlrScaleInit) { window._mlrScaleInit=true; initMLRScale(); }
+  if (tabId==='derivasi'  && !window._mlrMxInit)    { window._mlrMxInit=true;    initMLRMatrix(); }
+  if (tabId==='visual3d'  && !window._mlr3dInit)    { window._mlr3dInit=true;    initMLR3D(); window.awardBadge&&awardBadge('ach2','3D Explorer'); }
+  if (tabId==='koefisien' && !window._mlrCfInit)    { window._mlrCfInit=true;    initMLRCoeff(); initPrediction(); }
+  if (tabId==='evaluasi'  && !window._mlrDxInit)    {
+    window._mlrDxInit=true;
+    initMLRResidPlot(); initMLRQQ(); initMLRVIF(); initMLRHomo();
+    window.awardBadge&&awardBadge('ach3','Diagnostician');
+  }
+};
+
+// Prediction tool
+function initPrediction(){
+  const r=window.mlrOLS(window.MLR_DATA);
+  window._mlrFitResult=r;
+  document.getElementById('koefB0').textContent=r.b0.toFixed(3);
+  document.getElementById('koefB1').textContent=r.b1.toFixed(3);
+  document.getElementById('koefB2').textContent=r.b2.toFixed(3);
+  updatePrediction();
+}
+window.updatePrediction=function(){
+  const r=window._mlrFitResult;
+  if(!r) return;
+  const x1=parseFloat(document.getElementById('predX1').value);
+  const x2=parseFloat(document.getElementById('predX2').value);
+  document.getElementById('predX1Val').textContent=x1;
+  document.getElementById('predX2Val').textContent=x2;
+  const pred=r.b0+r.b1*x1+r.b2*x2;
+  document.getElementById('predResult').textContent=pred.toFixed(1)+' juta Rp';
+  const s2=r.b2>=0?'+':'-';
+  document.getElementById('predFormula').textContent=
+    'y = '+r.b0.toFixed(1)+' + '+r.b1.toFixed(2)+'x'+x1+' '+s2+' '+Math.abs(r.b2).toFixed(2)+'x'+x2+' = '+pred.toFixed(1);
+};
+
+// Init konsep tab on load
+document.addEventListener('DOMContentLoaded',()=>{
+  // init metrics shown in konsep
+  const r=window.mlrOLS(window.MLR_DATA);
+  // SLR mse
+  const D=window.MLR_DATA,n=D.length;
+  const mx1=D.reduce((s,p)=>s+p.x1,0)/n,mY=D.reduce((s,p)=>s+p.y,0)/n;
+  let num=0,den=0;D.forEach(p=>{num+=(p.x1-mx1)*(p.y-mY);den+=(p.x1-mx1)**2;});
+  const sb1=num/den,sb0=mY-sb1*mx1;
+  const slrMSE=D.reduce((s,p)=>s+(p.y-(sb1*p.x1+sb0))**2,0)/n;
+  const el1=document.getElementById('compSLRMSE');if(el1)el1.textContent=slrMSE.toFixed(2);
+  const el2=document.getElementById('compMLRMSE');if(el2)el2.textContent=r.mse.toFixed(2);
+  const el3=document.getElementById('compImprovement');
+  if(el3)el3.textContent=(((slrMSE-r.mse)/slrMSE)*100).toFixed(1)+'%';
+  // Metrics in evaluasi
+  window._mlrFitResult=r;
+  const el4=document.getElementById('mlrOptR2');if(el4)el4.textContent=r.r2.toFixed(4);
+  const el5=document.getElementById('mlrOptR2adj');if(el5)el5.textContent=r.r2adj.toFixed(4);
+  const el6=document.getElementById('mlrOptRMSE');if(el6)el6.textContent=r.rmse.toFixed(3);
+  const el7=document.getElementById('mlrOptMAE');if(el7)el7.textContent=r.mae.toFixed(3);
+  const el8=document.getElementById('mlrOptMSE');if(el8)el8.textContent=r.mse.toFixed(3);
+});
+</script>
+</body>
+</html>

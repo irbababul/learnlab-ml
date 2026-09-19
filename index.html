@@ -81,10 +81,9 @@
                   <span>Regresi Linear Sederhana</span>
                   <span class="item-status done">✓</span>
                 </a>
-                <a class="nav-item locked" href="#" data-page="polynomial-regression">
+                <a class="nav-item" href="pages/multiple-regression.html" data-page="multiple-regression">
                   <span class="item-icon">📊</span>
-                  <span>Regresi Polinomial</span>
-                  <span class="item-status lock">🔒</span>
+                  <span>Regresi Linear Berganda</span>
                 </a>
                 <a class="nav-item locked" href="#" data-page="logistic-regression">
                   <span class="item-icon">🔀</span>
@@ -204,13 +203,24 @@
             </div>
           </div>
 
-          <div class="progress-card locked-card">
+          <div class="progress-card active-card" onclick="window.location='pages/multiple-regression.html'">
             <div class="card-header">
               <span class="card-icon">📊</span>
-              <span class="card-status locked-status">🔒 LOCKED</span>
+              <span class="card-status in-progress">NEW</span>
             </div>
-            <h3 class="card-title">Regresi Polinomial</h3>
-            <p class="card-desc">Selesaikan Regresi Linear dulu untuk membuka materi ini.</p>
+            <h3 class="card-title">Regresi Linear Berganda</h3>
+            <p class="card-desc">Dari satu fitur ke banyak fitur — visualisasi 3D, derivasi matrix OLS, diagnostik model lengkap.</p>
+            <div class="card-progress">
+              <div class="card-progress-bar">
+                <div class="card-progress-fill" style="width: 0%"></div>
+              </div>
+              <span class="card-progress-text">0%</span>
+            </div>
+            <div class="card-tags">
+              <span class="tag">3D Scatter</span>
+              <span class="tag">Matrix OLS</span>
+              <span class="tag">Diagnostik</span>
+            </div>
           </div>
 
           <div class="progress-card locked-card">
@@ -236,11 +246,11 @@
       <!-- Stats Row -->
       <div class="stats-row">
         <div class="stat-box">
-          <span class="stat-num" id="statTopics">1</span>
+          <span class="stat-num" id="statTopics">2</span>
           <span class="stat-label">Materi Aktif</span>
         </div>
         <div class="stat-box">
-          <span class="stat-num">12</span>
+          <span class="stat-num">13</span>
           <span class="stat-label">Total Materi</span>
         </div>
         <div class="stat-box">
