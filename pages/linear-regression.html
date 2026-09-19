@@ -1,0 +1,1484 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Regresi Linear Sederhana — LearnLab</title>
+  <link rel="stylesheet" href="../css/main.css" />
+  <link rel="stylesheet" href="../css/lesson.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+</head>
+<body>
+<canvas id="bg-particles"></canvas>
+<div class="xp-popup" id="xpPopup"></div>
+
+<!-- ═══ TOP NAV ═══ -->
+<nav class="topbar" id="topbar">
+  <div class="topbar-left">
+    <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle Sidebar">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="logo">
+      <a href="../index.html" style="display:flex;align-items:center;gap:8px">
+        <span class="logo-icon">⬡</span>
+        <span class="logo-text">Learn<span class="logo-accent">Lab</span></span>
+      </a>
+    </div>
+  </div>
+  <div class="topbar-center">
+    <div class="xp-bar-wrap">
+      <span class="xp-label">XP</span>
+      <div class="xp-bar"><div class="xp-fill" id="xpFill" style="width:35%"></div></div>
+      <span class="xp-val" id="xpVal">70 / 200</span>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="player-badge">
+      <span class="player-level" id="playerLevel">Lv.1</span>
+      <span class="player-name">Pelajar</span>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══ SIDEBAR ═══ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-inner">
+    <div class="sidebar-header"><span class="sidebar-title">Peta Ilmu</span></div>
+    <div class="sidebar-search">
+      <input type="text" placeholder="Cari materi..." id="searchInput" />
+      <span class="search-icon">🔍</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-category active" id="cat-ml">
+        <div class="nav-category-header" onclick="toggleCategory('cat-ml')">
+          <span class="cat-icon">🤖</span><span class="cat-name">Machine Learning</span>
+          <span class="cat-arrow">▾</span><span class="cat-badge unlocked">UNLOCKED</span>
+        </div>
+        <div class="nav-category-body">
+          <div class="nav-topic active" id="topic-regresi">
+            <div class="nav-topic-header" onclick="toggleTopic('topic-regresi')">
+              <span class="topic-dot done"></span>
+              <span class="topic-name">Regresi Linear</span>
+              <span class="topic-arrow">▾</span>
+            </div>
+            <div class="nav-topic-body">
+              <a class="nav-item active" href="linear-regression.html"><span class="item-icon">📈</span><span>Regresi Linear Sederhana</span></a>
+              <a class="nav-item locked" href="#"><span class="item-icon">📊</span><span>Regresi Polinomial</span><span class="item-status lock">🔒</span></a>
+              <a class="nav-item locked" href="#"><span class="item-icon">🔀</span><span>Regresi Logistik</span><span class="item-status lock">🔒</span></a>
+            </div>
+          </div>
+          <div class="nav-topic" id="topic-klasifikasi">
+            <div class="nav-topic-header" onclick="toggleTopic('topic-klasifikasi')">
+              <span class="topic-dot locked"></span><span class="topic-name">Klasifikasi</span><span class="topic-arrow">▾</span>
+            </div>
+            <div class="nav-topic-body" style="display:none">
+              <a class="nav-item locked" href="#"><span class="item-icon">🎯</span><span>KNN</span><span class="item-status lock">🔒</span></a>
+              <a class="nav-item locked" href="#"><span class="item-icon">⚔️</span><span>SVM</span><span class="item-status lock">🔒</span></a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="nav-category">
+        <div class="nav-category-header locked" onclick="showLockedMsg()">
+          <span class="cat-icon">🧠</span><span class="cat-name">Deep Learning</span>
+          <span class="cat-arrow">▾</span><span class="cat-badge locked-badge">LOCKED</span>
+        </div>
+      </div>
+    </nav>
+    <div style="padding:16px;">
+      <button onclick="resetProgress()" class="ctrl-btn danger" style="width:100%;font-size:12px;">🔄 Reset Progress</button>
+    </div>
+  </div>
+</aside>
+
+<!-- ═══ LESSON CONTENT ═══ -->
+<div class="lesson-content" id="mainContent">
+
+  <!-- Hero -->
+  <div class="lesson-hero">
+    <div class="breadcrumb">
+      <a href="../index.html">🏠 Home</a><span class="breadcrumb-sep">›</span>
+      <a href="#">Machine Learning</a><span class="breadcrumb-sep">›</span>
+      <a href="#">Regresi</a><span class="breadcrumb-sep">›</span>
+      <span class="breadcrumb-current">Regresi Linear Sederhana</span>
+    </div>
+    <h1 class="lesson-title">📈 Regresi Linear Sederhana</h1>
+    <p class="lesson-subtitle">Dari intuisi visual hingga penurunan rumus lengkap — dengan grafik interaktif, cost surface 3D, dan Gradient Descent yang bisa kamu kendalikan.</p>
+    <div class="lesson-meta">
+      <div class="lesson-meta-item"><span>⏱️</span><span>~60 menit</span></div>
+      <div class="lesson-meta-item"><span>🧮</span><span>Matematika Mendalam</span></div>
+      <div class="lesson-meta-item"><span>🎮</span><span>10 Grafik Interaktif</span></div>
+      <div class="lesson-meta-item"><span>⭐</span><span>+190 XP Total</span></div>
+    </div>
+  </div>
+
+  <!-- Chapter Tabs -->
+  <div class="chapter-tabs" id="chapterTabs">
+    <div class="chapter-tab active" data-tab="konsep"     onclick="switchTab('konsep')"><span class="tab-num">1</span>Konsep</div>
+    <div class="chapter-tab"        data-tab="model"      onclick="switchTab('model')"><span class="tab-num">2</span>Model</div>
+    <div class="chapter-tab"        data-tab="cost"       onclick="switchTab('cost')"><span class="tab-num">3</span>Cost Function</div>
+    <div class="chapter-tab"        data-tab="derivasi"   onclick="switchTab('derivasi')"><span class="tab-num">4</span>Derivasi</div>
+    <div class="chapter-tab"        data-tab="grafik"     onclick="switchTab('grafik')"><span class="tab-num">5</span>Grafik Regresi</div>
+    <div class="chapter-tab"        data-tab="optimizer"  onclick="switchTab('optimizer')"><span class="tab-num">6</span>Optimizer</div>
+    <div class="chapter-tab"        data-tab="evaluasi"   onclick="switchTab('evaluasi')"><span class="tab-num">7</span>Evaluasi</div>
+    <div class="chapter-tab"        data-tab="quiz"       onclick="switchTab('quiz')"><span class="tab-num">8</span>Quiz</div>
+  </div>
+
+  <!-- Lesson Body -->
+  <div class="lesson-body">
+  <div class="content-main">
+
+  <!-- ══════════════════════════════════════════════════
+       TAB 1 — KONSEP & INTUISI
+       ══════════════════════════════════════════════════ -->
+  <div class="content-section active" id="sec-konsep">
+    <div class="concept-block">
+      <div class="concept-title">🎯 APA ITU REGRESI LINEAR?</div>
+      <p class="concept-text">
+        Regresi Linear adalah algoritma supervised learning paling mendasar. Tujuannya sederhana:
+        <strong>mencari garis lurus terbaik yang paling mendekati data.</strong><br><br>
+        Kata <em>"terbaik"</em> artinya garis yang meminimalkan total jarak kuadrat antara titik data dan garis tersebut.
+        Jarak ini kita sebut <em>residual</em>.
+      </p>
+    </div>
+
+    <div class="two-col-graph">
+      <div class="mini-graph-box">
+        <div class="mini-graph-title">Residual eᵢ = yᵢ − ŷᵢ</div>
+        <canvas id="fgResidual" width="320" height="200" style="width:100%;height:auto"></canvas>
+        <p class="graph-caption">Kotak merah = eᵢ² yang harus diminimalkan</p>
+      </div>
+      <div class="mini-graph-box">
+        <div class="mini-graph-title">Efek Slope b₁</div>
+        <canvas id="fgSlopeEffect" width="320" height="200" style="width:100%;height:auto"></canvas>
+        <p class="graph-caption">b₁ menentukan kemiringan — animasi menunjukkan perubahan real-time</p>
+      </div>
+    </div>
+
+    <div class="concept-block">
+      <div class="concept-title">🌍 ANALOGI NYATA</div>
+      <p class="concept-text">
+        Kamu ingin prediksi <strong>nilai ujian</strong> berdasarkan <strong>jam belajar</strong>.
+        Data menunjukkan pola: semakin banyak belajar → semakin tinggi nilai. Regresi Linear menemukan
+        garis <em>ŷ = b₁·x + b₀</em> yang paling "pas" dengan pola ini.
+      </p>
+      <div style="overflow-x:auto;margin-top:14px;">
+        <table class="data-table">
+          <thead><tr><th>Jam Belajar (x)</th><th>Nilai (y)</th><th>Prediksi ŷ</th><th>Error eᵢ</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>55</td><td>53.4</td><td>+1.6</td></tr>
+            <tr><td>2</td><td>63</td><td>63.0</td><td>0.0</td></tr>
+            <tr><td>3</td><td>70</td><td>72.6</td><td>-2.6</td></tr>
+            <tr><td>4</td><td>82</td><td>82.2</td><td>-0.2</td></tr>
+            <tr><td>5</td><td>91</td><td>91.8</td><td>-0.8</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="concept-block">
+      <div class="concept-title">🧩 SIMBOL & KOMPONEN</div>
+      <div class="symbol-grid">
+        <div class="symbol-item"><span class="sym">x</span><span class="sym-desc">Fitur / Input / Prediktor</span></div>
+        <div class="symbol-item"><span class="sym">y</span><span class="sym-desc">Target / Output / Label (nilai asli)</span></div>
+        <div class="symbol-item"><span class="sym">ŷ</span><span class="sym-desc">Prediksi model (y-hat)</span></div>
+        <div class="symbol-item"><span class="sym">b₀</span><span class="sym-desc">Intercept — nilai ŷ saat x = 0</span></div>
+        <div class="symbol-item"><span class="sym">b₁</span><span class="sym-desc">Slope — perubahan ŷ per +1 unit x</span></div>
+        <div class="symbol-item"><span class="sym">eᵢ</span><span class="sym-desc">Residual = yᵢ − ŷᵢ (error satu titik)</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════
+       TAB 2 — MODEL MATEMATIKA
+       ══════════════════════════════════════════════════ -->
+  <div class="content-section" id="sec-model">
+    <div class="concept-block">
+      <div class="concept-title">📐 PERSAMAAN MODEL</div>
+      <p class="concept-text">Model regresi linear sederhana ditulis sebagai:</p>
+      <div class="formula-block">
+        <div class="formula-title">PERSAMAAN GARIS</div>
+        <div>$$\hat{y} = b_0 + b_1 \cdot x$$</div>
+        <div class="formula-desc">
+          <ul style="list-style:none;padding:0;margin-top:8px;">
+            <li>🔵 $b_0$ = intercept (titik potong sumbu Y)</li>
+            <li>🟣 $b_1$ = slope (kemiringan garis)</li>
+            <li>🟢 $\hat{y}$ = nilai prediksi untuk input $x$</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="two-col-graph">
+      <div class="mini-graph-box">
+        <div class="mini-graph-title">Efek b₀ (Intercept)</div>
+        <canvas id="fgInterceptEffect" width="320" height="200" style="width:100%;height:auto"></canvas>
+        <p class="graph-caption">b₀ menggeser garis naik/turun tanpa mengubah kemiringan</p>
+      </div>
+      <div class="mini-graph-box">
+        <div class="mini-graph-title">Efek b₁ (Slope)</div>
+        <canvas id="fgSlopeEffect2" width="320" height="200" style="width:100%;height:auto"></canvas>
+        <p class="graph-caption">b₁ mengubah sudut kemiringan garis</p>
+      </div>
+    </div>
+
+    <div class="concept-block">
+      <div class="concept-title">🔢 INTERPRETASI NUMERIK</div>
+      <p class="concept-text">
+        Contoh: Model prediksi harga rumah menghasilkan <strong>ŷ = 50 + 3.5·x</strong> (x = luas m², y = harga juta Rp)<br><br>
+        • $b_0 = 50$ → harga dasar tanpa luas apapun adalah 50 juta (konstanta)<br>
+        • $b_1 = 3.5$ → setiap tambah 1 m², harga naik 3.5 juta<br>
+        • Prediksi untuk x = 80 m²: $\hat{y} = 50 + 3.5 \times 80 = 330$ juta Rp
+      </p>
+    </div>
+
+    <div class="concept-block">
+      <div class="concept-title">📊 ASUMSI MODEL</div>
+      <div class="assumption-list">
+        <div class="assumption-item">
+          <span class="asm-icon">1️⃣</span>
+          <div><strong>Linearitas</strong> — hubungan antara X dan Y benar-benar linear</div>
+        </div>
+        <div class="assumption-item">
+          <span class="asm-icon">2️⃣</span>
+          <div><strong>Independensi</strong> — observasi tidak saling mempengaruhi</div>
+        </div>
+        <div class="assumption-item">
+          <span class="asm-icon">3️⃣</span>
+          <div><strong>Homoskedastisitas</strong> — variansi residual konstan di semua X</div>
+        </div>
+        <div class="assumption-item">
+          <span class="asm-icon">4️⃣</span>
+          <div><strong>Normalitas Residual</strong> — error terdistribusi normal $\sim \mathcal{N}(0, \sigma^2)$</div>
+        </div>
+      </div>
+    </div>
+    <div class="mini-graph-box" style="margin-top:16px;">
+      <div class="mini-graph-title">Distribusi Residual (harus mendekati normal)</div>
+      <canvas id="fgErrDist" width="640" height="180" style="width:100%;height:auto"></canvas>
+      <p class="graph-caption">Kurva biru = distribusi normal ideal; jika model baik, histogram residual menyerupai kurva ini</p>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════
+       TAB 3 — COST FUNCTION / MSE
+       ══════════════════════════════════════════════════ -->
+  <div class="content-section" id="sec-cost">
+
+    <div class="concept-block">
+      <div class="concept-title">❓ KENAPA BUTUH COST FUNCTION?</div>
+      <p class="concept-text">
+        Ada tak terhingga garis yang bisa kita gambar melalui data. Cost function memberikan
+        <strong>satu angka</strong> yang mengukur seberapa buruk suatu garis.
+        Tujuan training = <em>mencari b₀ dan b₁ yang membuat angka ini sekecil mungkin.</em>
+      </p>
+    </div>
+
+    <!-- Step 1: Error satu titik -->
+    <div class="concept-block">
+      <div class="concept-title">LANGKAH 1 — Error Satu Titik Data</div>
+      <div class="formula-block">
+        <div class="formula-title">RESIDUAL</div>
+        <div>$$e_i = y_i - \hat{y}_i = y_i - (b_0 + b_1 x_i)$$</div>
+      </div>
+      <p class="concept-text">
+        $e_i > 0$ → prediksi terlalu rendah &nbsp;|&nbsp;
+        $e_i < 0$ → prediksi terlalu tinggi &nbsp;|&nbsp;
+        $e_i = 0$ → prediksi sempurna
+      </p>
+    </div>
+
+    <!-- Step 2: Kenapa kuadrat? -->
+    <div class="concept-block">
+      <div class="concept-title">LANGKAH 2 — Kenapa Error Dikuadratkan?</div>
+      <p class="concept-text">Kalau langsung dijumlahkan: error positif dan negatif bisa saling meniadakan → $\sum e_i \approx 0$ meski prediksi jelek.</p>
+      <div class="formula-block">
+        <div class="formula-title">SQUARED ERROR</div>
+        <div>$$e_i^2 = (y_i - (b_0 + b_1 x_i))^2$$</div>
+      </div>
+      <p class="concept-text">
+        Kuadrat memastikan: ✅ semua error positif &nbsp; ✅ error besar dapat hukuman lebih besar (outlier sensitif) &nbsp; ✅ differentiable (bisa diturunkan untuk GD)
+      </p>
+    </div>
+
+    <!-- Step 3: MSE -->
+    <div class="concept-block">
+      <div class="concept-title">LANGKAH 3 — Rata-Ratakan Semua → MSE</div>
+      <div class="formula-block">
+        <div class="formula-title">MEAN SQUARED ERROR</div>
+        <div>$$J(b_0, b_1) = \frac{1}{n}\sum_{i=1}^{n}(y_i - (b_0 + b_1 x_i))^2$$</div>
+        <div class="formula-desc">
+          $n$ = jumlah data &nbsp;|&nbsp; $J$ = cost (makin kecil makin baik) &nbsp;|&nbsp;
+          Tujuan: cari $(b_0^*, b_1^*)$ yang meminimalkan $J$
+        </div>
+      </div>
+    </div>
+
+    <!-- MSE as function of b0 graph -->
+    <div class="mini-graph-box" style="margin-top:8px;">
+      <div class="mini-graph-title">J sebagai fungsi b₀ (b₁ tetap) — Parabola!</div>
+      <canvas id="fgMSEParabola" width="640" height="200" style="width:100%;height:auto"></canvas>
+      <p class="graph-caption">
+        Titik putih bergerak = nilai J untuk berbagai b₀ &nbsp;|&nbsp; Titik hijau = minimum &nbsp;|&nbsp; MSE selalu berbentuk parabola (convex) → ada satu minimum global
+      </p>
+    </div>
+
+    <div class="concept-block">
+      <div class="concept-title">💡 SIFAT PENTING MSE</div>
+      <div class="info-chips">
+        <div class="chip chip-cyan">Convex — hanya satu minimum global</div>
+        <div class="chip chip-purple">Differentiable — bisa dioptimasi dengan GD</div>
+        <div class="chip chip-yellow">Sensitif Outlier — error besar dikuadratkan</div>
+        <div class="chip chip-green">Satuan = Y² — susah diinterpretasi langsung</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════
+       TAB 4 — TURUNAN & DERIVASI
+       ══════════════════════════════════════════════════ -->
+  <div class="content-section" id="sec-derivasi">
+
+    <!-- Method selector -->
+    <div class="method-tabs">
+      <button class="method-tab active" id="mtOLS" onclick="switchMethod('ols')">📐 Normal Equation (OLS)</button>
+      <button class="method-tab" id="mtGD" onclick="switchMethod('gd')">⛷️ Gradient Descent</button>
+    </div>
+
+    <!-- OLS Derivation -->
+    <div id="method-ols">
+      <div class="concept-block">
+        <div class="concept-title">📐 ORDINARY LEAST SQUARES — SOLUSI CLOSED-FORM</div>
+        <p class="concept-text">
+          OLS menemukan b₀ dan b₁ secara analitik — tanpa iterasi. Caranya: ambil turunan parsial J terhadap setiap parameter, set = 0, lalu selesaikan.
+        </p>
+      </div>
+
+      <div class="derivation-box" id="deriv-ols">
+        <div class="derivation-header">
+          <div class="derivation-title">TURUNAN OLS — LANGKAH DEMI LANGKAH</div>
+          <div class="deriv-controls">
+            <button class="deriv-btn" onclick="derivPrev('deriv-ols')" id="prev-deriv-ols">← Prev</button>
+            <span class="deriv-counter" id="counter-deriv-ols">1 / 7</span>
+            <button class="deriv-btn primary" onclick="derivNext('deriv-ols')" id="next-deriv-ols">Next →</button>
+            <button class="deriv-btn auto" id="auto-deriv-ols" onclick="derivAutoPlay('deriv-ols')">▶ Auto</button>
+            <button class="deriv-btn reset" onclick="derivReset('deriv-ols')">↺</button>
+          </div>
+        </div>
+
+        <div class="d-step d-visible" id="step-ols-1">
+          <div class="step-badge">1</div>
+          <div class="step-body">
+            <div class="step-label">Fungsi cost yang akan diminimalkan</div>
+            <div>$$J(b_0, b_1) = \frac{1}{n}\sum_{i=1}^{n}(y_i - b_0 - b_1 x_i)^2$$</div>
+            <div class="step-note">Kita punya dua unknown: b₀ dan b₁. Untuk menemukan minimum, kita perlu dua persamaan.</div>
+          </div>
+        </div>
+
+        <div class="d-step d-hidden">
+          <div class="step-badge">2</div>
+          <div class="step-body">
+            <div class="step-label">Turunan parsial terhadap b₀ (set = 0)</div>
+            <div>$$\frac{\partial J}{\partial b_0} = \frac{-2}{n}\sum_{i=1}^{n}(y_i - b_0 - b_1 x_i) = 0$$</div>
+            <div class="step-note">Chain rule: turunan $(u)^2$ = $2u \cdot u'$, dan turunan $(y_i - b_0 - b_1 x_i)$ terhadap $b_0$ = $-1$.</div>
+          </div>
+        </div>
+
+        <div class="d-step d-hidden">
+          <div class="step-badge">3</div>
+          <div class="step-body">
+            <div class="step-label">Sederhanakan → rumus b₀</div>
+            <div>$$\sum y_i = n b_0 + b_1 \sum x_i \quad\Rightarrow\quad \boxed{b_0 = \bar{y} - b_1 \bar{x}}$$</div>
+            <div class="step-note">$\bar{x} = \frac{1}{n}\sum x_i$ dan $\bar{y} = \frac{1}{n}\sum y_i$ adalah rata-rata. b₀ tergantung nilai b₁.</div>
+          </div>
+        </div>
+
+        <div class="d-step d-hidden">
+          <div class="step-badge">4</div>
+          <div class="step-body">
+            <div class="step-label">Turunan parsial terhadap b₁ (set = 0)</div>
+            <div>$$\frac{\partial J}{\partial b_1} = \frac{-2}{n}\sum_{i=1}^{n} x_i(y_i - b_0 - b_1 x_i) = 0$$</div>
+            <div class="step-note">Turunan $(y_i - b_0 - b_1 x_i)$ terhadap $b_1$ = $-x_i$ → hasilnya $-2x_i \cdot \text{residual}$.</div>
+          </div>
+        </div>
+
+        <div class="d-step d-hidden">
+          <div class="step-badge">5</div>
+          <div class="step-body">
+            <div class="step-label">Substitusi b₀ = ȳ − b₁x̄ ke persamaan b₁</div>
+            <div>$$\sum x_i(y_i - (\bar{y} - b_1\bar{x}) - b_1 x_i) = 0$$</div>
+            <div>$$\sum x_i(y_i - \bar{y}) = b_1\sum x_i(x_i - \bar{x})$$</div>
+            <div class="step-note">Substitusi untuk menghilangkan b₀, sehingga hanya tersisa satu unknown: b₁.</div>
+          </div>
+        </div>
+
+        <div class="d-step d-hidden">
+          <div class="step-badge">6</div>
+          <div class="step-body">
+            <div class="step-label">Gunakan identitas aljabar statistik</div>
+            <div>$$\sum x_i(y_i-\bar{y}) = \sum(x_i-\bar{x})(y_i-\bar{y}) \quad\text{dan}\quad \sum x_i(x_i-\bar{x}) = \sum(x_i-\bar{x})^2$$</div>
+            <div class="step-note">Identitas ini valid karena $\sum x_i \cdot \bar{y} = n\bar{x}\bar{y}$ dan $\sum \bar{x}(y_i-\bar{y}) = \bar{x}\sum(y_i-\bar{y}) = 0$.</div>
+          </div>
+        </div>
+
+        <div class="d-step d-hidden">
+          <div class="step-badge result">7 ✓</div>
+          <div class="step-body">
+            <div class="step-label result-label">✅ SOLUSI AKHIR OLS</div>
+            <div>$$\boxed{b_1 = \frac{\sum_{i=1}^{n}(x_i - \bar{x})(y_i - \bar{y})}{\sum_{i=1}^{n}(x_i - \bar{x})^2} = \frac{\text{Cov}(X,Y)}{\text{Var}(X)}}$$</div>
+            <div>$$\boxed{b_0 = \bar{y} - b_1 \bar{x}}$$</div>
+            <div class="step-note result-note">
+              Pembilang = kovarians X dan Y &nbsp;|&nbsp; Penyebut = variansi X.<br>
+              Ini solusi <strong>closed-form</strong> — langsung hitung tanpa iterasi!
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GD Derivation -->
+    <div id="method-gd" style="display:none">
+      <div class="concept-block">
+        <div class="concept-title">⛷️ GRADIENT DESCENT — SOLUSI ITERATIF</div>
+        <p class="concept-text">
+          Gradient Descent menemukan minimum J secara bertahap — cocok untuk model kompleks yang tidak punya solusi closed-form.
+          Bayangkan: kamu di bukit berkabut, selalu melangkah ke arah yang paling menurun.
+        </p>
+      </div>
+
+      <div class="derivation-box" id="deriv-gd">
+        <div class="derivation-header">
+          <div class="derivation-title">DERIVASI GRADIENT DESCENT</div>
+          <div class="deriv-controls">
+            <button class="deriv-btn" onclick="derivPrev('deriv-gd')" id="prev-deriv-gd">← Prev</button>
+            <span class="deriv-counter" id="counter-deriv-gd">1 / 6</span>
+            <button class="deriv-btn primary" onclick="derivNext('deriv-gd')" id="next-deriv-gd">Next →</button>
+            <button class="deriv-btn auto" id="auto-deriv-gd" onclick="derivAutoPlay('deriv-gd')">▶ Auto</button>
+            <button class="deriv-btn reset" onclick="derivReset('deriv-gd')">↺</button>
+          </div>
+        </div>
+
+        <div class="d-step d-visible">
+          <div class="step-badge">1</div>
+          <div class="step-body">
+            <div class="step-label">Mulai dari nilai awal sembarang</div>
+            <div>$$b_0^{(0)} = 0, \quad b_1^{(0)} = 0 \quad \text{(atau random kecil)}$$</div>
+            <div class="step-note">GD dimulai dari titik mana saja di permukaan J. Karena J convex, semua titik awal akan konvergen ke minimum yang sama.</div>
+          </div>
+        </div>
+
+        <div class="d-step d-hidden">
+          <div class="step-badge">2</div>
+          <div class="step-body">
+            <div class="step-label">Hitung gradient — arah naik tercepat</div>
+            <div>$$\frac{\partial J}{\partial b_0} = \frac{-2}{n}\sum_{i=1}^{n}(y_i - \hat{y}_i) = \frac{-2}{n}\sum e_i$$</div>
+            <div>$$\frac{\partial J}{\partial b_1} = \frac{-2}{n}\sum_{i=1}^{n}x_i(y_i - \hat{y}_i) = \frac{-2}{n}\sum x_i e_i$$</div>
+            <div class="step-note">Gradient = vektor turunan parsial. Arahnya menunjuk ke tempat J naik paling cepat dari posisi saat ini.</div>
+          </div>
+        </div>
+
+        <div class="d-step d-hidden">
+          <div class="step-badge">3</div>
+          <div class="step-body">
+            <div class="step-label">Update rule — bergerak berlawanan gradient</div>
+            <div>$$b_0 \leftarrow b_0 - \alpha \cdot \frac{\partial J}{\partial b_0}$$</div>
+            <div>$$b_1 \leftarrow b_1 - \alpha \cdot \frac{\partial J}{\partial b_1}$$</div>
+            <div class="step-note">Tanda minus → bergerak <em>berlawanan</em> arah naik = <em>menuruni</em> bukit. $\alpha$ (learning rate) = panjang langkah.</div>
+          </div>
+        </div>
+
+        <div class="d-step d-hidden">
+          <div class="step-badge">4</div>
+          <div class="step-body">
+            <div class="step-label">Substitusi gradient yang sudah dihitung</div>
+            <div>$$b_0 \leftarrow b_0 + \frac{2\alpha}{n}\sum_{i=1}^{n}(y_i - \hat{y}_i)$$</div>
+            <div>$$b_1 \leftarrow b_1 + \frac{2\alpha}{n}\sum_{i=1}^{n}x_i(y_i - \hat{y}_i)$$</div>
+            <div class="step-note">Perhatikan tanda: update bergerak searah dengan rata-rata residual (error yang tersisa).</div>
+          </div>
+        </div>
+
+        <div class="d-step d-hidden">
+          <div class="step-badge">5</div>
+          <div class="step-body">
+            <div class="step-label">Efek learning rate α</div>
+            <div class="lr-comparison">
+              <div class="lr-case lr-small">$\alpha$ terlalu kecil → konvergen sangat lambat (banyak iterasi)</div>
+              <div class="lr-case lr-good">$\alpha$ tepat → konvergen efisien menuju minimum</div>
+              <div class="lr-case lr-big">$\alpha$ terlalu besar → overshoot, bisa diverge (J malah naik!)</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-step d-hidden">
+          <div class="step-badge result">6 ✓</div>
+          <div class="step-body">
+            <div class="step-label result-label">✅ ALGORITMA LENGKAP GD</div>
+            <div class="algo-block">
+              <div class="algo-line"><span class="algo-kw">INISIALISASI</span> b₀ = 0, b₁ = 0</div>
+              <div class="algo-line"><span class="algo-kw">ULANGI</span> sampai konvergen:</div>
+              <div class="algo-line algo-indent">1. Hitung ŷᵢ = b₀ + b₁xᵢ untuk semua i</div>
+              <div class="algo-line algo-indent">2. Hitung ∂J/∂b₀ dan ∂J/∂b₁</div>
+              <div class="algo-line algo-indent">3. Update b₀ dan b₁ secara simultan</div>
+              <div class="algo-line algo-indent">4. Hitung J baru — jika ΔJ &lt; ε, berhenti</div>
+            </div>
+            <div class="step-note result-note">Konvergen jika J tidak berubah signifikan antar iterasi. Lihat Tab 8 untuk visualisasi interaktif!</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gradient direction graph -->
+      <div class="mini-graph-box" style="margin-top:16px;">
+        <div class="mini-graph-title">Arah Gradient & Update b₀</div>
+        <div style="display:flex;gap:12px;align-items:center;margin-bottom:8px;">
+          <label style="font-size:13px;color:var(--text-secondary);">b₀ cursor:</label>
+          <input type="range" id="fgGradSlider" min="-3" max="9" step="0.1" value="6" style="flex:1"/>
+          <span id="fgGradVal" style="font-family:monospace;color:var(--accent-cyan);width:32px;">6.0</span>
+          <button id="fgGradAnim" class="ctrl-btn" style="font-size:12px;">▶ Animasi GD</button>
+        </div>
+        <canvas id="fgGradient" width="640" height="200" style="width:100%;height:auto"></canvas>
+        <p class="graph-caption">Garis merah = tangent (gradient). Panah hijau = arah update (berlawanan gradient)</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════
+       TAB 5 — GRAFIK REGRESI INTERAKTIF
+       ══════════════════════════════════════════════════ -->
+  <div class="content-section" id="sec-grafik">
+    <div class="concept-block" style="padding-bottom:14px">
+      <div class="concept-title">🎮 MANIPULASI LANGSUNG</div>
+      <p class="concept-text">Pilih mode <strong>Slider</strong> untuk geser b₀/b₁ dan lihat efeknya secara instan. Mode <strong>Interaktif</strong> untuk klik tambah titik data sendiri.</p>
+    </div>
+
+    <div class="graph-container">
+      <div class="graph-header">
+        <div class="graph-title">📊 SCATTER PLOT — REGRESI LINEAR</div>
+        <div class="mode-switcher">
+          <button class="mode-btn active" data-mode="slider" onclick="setGraphMode('slider')">🎚 Slider b₀/b₁</button>
+          <button class="mode-btn" data-mode="interactive" onclick="setGraphMode('interactive')">✏️ Interaktif</button>
+        </div>
+      </div>
+
+      <!-- Slider mode controls -->
+      <div id="regrSliders">
+        <div class="slider-grid">
+          <div class="slider-row">
+            <label>b₀ (intercept)</label>
+            <input type="range" id="b0Slider" min="-5" max="8" step="0.05" value="3.0" oninput="updateB0(this.value)" />
+            <span id="b0Val" class="slider-val">3.00</span>
+          </div>
+          <div class="slider-row">
+            <label>b₁ (slope)</label>
+            <input type="range" id="b1Slider" min="-1" max="4" step="0.05" value="1.8" oninput="updateB1(this.value)" />
+            <span id="b1Val" class="slider-val">1.80</span>
+          </div>
+        </div>
+        <button class="ctrl-btn" onclick="findOLS()" style="margin-top:8px;">🎯 Cari OLS Optimal Otomatis</button>
+      </div>
+
+      <!-- Interactive mode controls -->
+      <div id="regrInterControls" style="display:none;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+        <button class="ctrl-btn imode-btn active" data-imode="add" onclick="setInterMode('add')">+ Tambah Titik</button>
+        <button class="ctrl-btn imode-btn" data-imode="drag" onclick="setInterMode('drag')">✥ Geser Titik</button>
+        <button class="ctrl-btn" id="btnShowResidual" onclick="toggleResiduals()">〜 Residual</button>
+        <button class="ctrl-btn" id="btnShowCI" onclick="toggleCI()">📐 Confidence Band</button>
+        <button class="ctrl-btn danger" onclick="resetPoints()">🗑 Reset</button>
+      </div>
+
+      <canvas id="regressionCanvas" class="interactive" style="width:100%;height:auto;cursor:crosshair;"></canvas>
+      <p class="graph-hint" id="graphHint">💡 Geser slider b₀/b₁ untuk melihat efek langsung terhadap garis dan MSE.</p>
+
+      <div class="graph-info-grid">
+        <div class="info-box"><div class="info-label">b₁ (slope)</div><div class="info-val cyan" id="infoW">—</div></div>
+        <div class="info-box"><div class="info-label">b₀ (intercept)</div><div class="info-val purple" id="infoB">—</div></div>
+        <div class="info-box"><div class="info-label">MSE</div><div class="info-val green" id="infoMSE">—</div></div>
+        <div class="info-box"><div class="info-label">RMSE</div><div class="info-val yellow" id="infoRMSE">—</div></div>
+        <div class="info-box"><div class="info-label">R²</div><div class="info-val cyan" id="infoR2">—</div></div>
+        <div class="info-box"><div class="info-label">n Data</div><div class="info-val purple" id="infoN">—</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════
+       TAB 9 — EVALUASI MODEL
+       ══════════════════════════════════════════════════ -->
+  <div class="content-section" id="sec-evaluasi">
+
+    <!-- MSE -->
+    <div class="concept-block">
+      <div class="concept-title">1️⃣ MSE — MEAN SQUARED ERROR</div>
+      <div>$$MSE = \frac{1}{n}\sum_{i=1}^{n}(y_i - \hat{y}_i)^2$$</div>
+      <div class="metric-props">
+        <span class="prop good">✅ Differentiable → cocok untuk GD</span>
+        <span class="prop bad">❌ Satuan = Y² → susah diinterpretasi</span>
+        <span class="prop bad">❌ Sensitif outlier</span>
+        <span class="prop neutral">📌 Range: [0, ∞)</span>
+      </div>
+    </div>
+
+    <!-- RMSE -->
+    <div class="concept-block">
+      <div class="concept-title">2️⃣ RMSE — ROOT MEAN SQUARED ERROR</div>
+      <div>$$RMSE = \sqrt{MSE} = \sqrt{\frac{1}{n}\sum_{i=1}^{n}(y_i - \hat{y}_i)^2}$$</div>
+      <div class="metric-props">
+        <span class="prop good">✅ Satuan sama dengan Y → mudah diinterpretasi</span>
+        <span class="prop bad">❌ Masih sensitif outlier</span>
+        <span class="prop neutral">📌 RMSE = 5 berarti rata-rata salah ~5 unit Y</span>
+      </div>
+    </div>
+
+    <!-- MAE -->
+    <div class="concept-block">
+      <div class="concept-title">3️⃣ MAE — MEAN ABSOLUTE ERROR</div>
+      <div>$$MAE = \frac{1}{n}\sum_{i=1}^{n}|y_i - \hat{y}_i|$$</div>
+      <div class="metric-props">
+        <span class="prop good">✅ Robust terhadap outlier</span>
+        <span class="prop good">✅ Interpretasi paling intuitif</span>
+        <span class="prop bad">❌ Tidak differentiable di 0 → butuh Huber loss untuk GD</span>
+        <span class="prop neutral">📌 MAE = 3 berarti rata-rata salah 3 unit</span>
+      </div>
+    </div>
+
+    <!-- R² -->
+    <div class="concept-block">
+      <div class="concept-title">4️⃣ R² — KOEFISIEN DETERMINASI</div>
+      <div>$$R^2 = 1 - \frac{SS_{res}}{SS_{tot}} = 1 - \frac{\sum(y_i - \hat{y}_i)^2}{\sum(y_i - \bar{y})^2}$$</div>
+      <div class="metric-props">
+        <span class="prop good">✅ Skala 0–1 yang intuitif</span>
+        <span class="prop neutral">📌 R²=1: model sempurna | R²=0: sama seperti tebak rata-rata | R²&lt;0: model lebih buruk dari rata-rata!</span>
+        <span class="prop neutral">📌 "Model menjelaskan X% variansi data"</span>
+      </div>
+
+      <!-- R² interactive -->
+      <div class="mini-graph-box" style="margin-top:12px;">
+        <div class="mini-graph-title">R² Visual: SS_res vs SS_tot</div>
+        <div style="display:flex;gap:12px;align-items:center;margin:8px 0;">
+          <label style="font-size:13px;color:var(--text-secondary);">Simulasi R²:</label>
+          <input type="range" id="r2Slider" min="0.1" max="0.99" step="0.01" value="0.85" style="flex:1"/>
+          <span id="r2SliderVal" style="font-family:monospace;color:var(--accent-cyan);width:40px;">0.85</span>
+        </div>
+        <canvas id="fgR2" width="640" height="220" style="width:100%;height:auto"></canvas>
+        <p class="graph-caption">
+          Merah = SS_res (error ke garis). Oranye = SS_tot (error ke rata-rata). R² = 1 − SS_res/SS_tot
+        </p>
+      </div>
+    </div>
+
+    <!-- MAPE -->
+    <div class="concept-block">
+      <div class="concept-title">5️⃣ MAPE — MEAN ABSOLUTE PERCENTAGE ERROR</div>
+      <div>$$MAPE = \frac{100\%}{n}\sum_{i=1}^{n}\left|\frac{y_i - \hat{y}_i}{y_i}\right|$$</div>
+      <div class="metric-props">
+        <span class="prop good">✅ Skala persentase → mudah dikomunikasikan ke non-teknis</span>
+        <span class="prop bad">❌ Undefined jika yᵢ = 0</span>
+        <span class="prop bad">❌ Asymmetric — over-prediksi dan under-prediksi dihukum berbeda</span>
+        <span class="prop neutral">📌 MAPE = 10% berarti rata-rata salah 10% dari nilai aktual</span>
+      </div>
+    </div>
+
+    <!-- Comparison demo -->
+    <div class="graph-container">
+      <div class="graph-header">
+        <div class="graph-title">🔬 DEMO INTERAKTIF — EFEK OUTLIER & NOISE</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="ctrl-btn" id="btnOutlier" onclick="toggleOutlier()">🔴 Tambah Outlier</button>
+        </div>
+      </div>
+      <div class="gd-ctrl-group" style="margin-bottom:14px;">
+        <div class="ctrl-label">Level Noise <span id="errorLevelVal">30%</span></div>
+        <input type="range" id="errorLevelSlider" min="0" max="100" step="1" value="30" oninput="updateMetricDemo(this.value)"/>
+      </div>
+
+      <canvas id="metricCanvas" style="width:100%;height:auto;border-radius:8px;"></canvas>
+
+      <div class="graph-info-grid" style="margin-top:14px;">
+        <div class="info-box"><div class="info-label">MSE</div><div class="info-val cyan" id="metricMSE">—</div></div>
+        <div class="info-box"><div class="info-label">RMSE</div><div class="info-val green" id="metricRMSE">—</div></div>
+        <div class="info-box"><div class="info-label">MAE</div><div class="info-val purple" id="metricMAE">—</div></div>
+        <div class="info-box"><div class="info-label">R²</div><div class="info-val cyan" id="metricR2">—</div></div>
+        <div class="info-box"><div class="info-label">SS_res</div><div class="info-val yellow" id="metricSSRes">—</div></div>
+        <div class="info-box"><div class="info-label">SS_tot</div><div class="info-val yellow" id="metricSSTot">—</div></div>
+        <div class="info-box"><div class="info-label">Max Error</div><div class="info-val green" id="metricMaxErr">—</div></div>
+        <div class="info-box"><div class="info-label">n Data</div><div class="info-val purple" id="metricN">—</div></div>
+      </div>
+
+      <!-- Bar chart comparison -->
+      <div style="margin-top:16px;">
+        <div class="graph-title" style="margin-bottom:8px;">📊 PERBANDINGAN: Normal vs Dengan Outlier</div>
+        <canvas id="metricBarCanvas" width="500" height="160" style="width:100%;max-width:500px;height:auto;border-radius:8px;background:rgba(0,0,0,0.15);"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════
+       TAB 10 — QUIZ
+       ══════════════════════════════════════════════════ -->
+  <div class="content-section" id="sec-quiz">
+
+    <div class="concept-block">
+      <div class="concept-title">🏆 UJI PEMAHAMANMU — 6 SOAL</div>
+      <p class="concept-text">Setiap jawaban benar = +25 XP. Skor ≥ 4/6 → Badge <em>Quiz Master</em>!</p>
+    </div>
+
+    <!-- Q1 -->
+    <div class="quiz-box">
+      <div class="quiz-title">❓ SOAL 1 / 6</div>
+      <div class="quiz-question">Dalam $\hat{y} = b_0 + b_1 x$ dengan $b_0=5$ dan $b_1=2$, prediksi untuk $x=3$ adalah?</div>
+      <div class="quiz-options" id="q1opts">
+        <div class="quiz-opt" onclick="answerQuiz('q1',this,false)">a) 8</div>
+        <div class="quiz-opt" onclick="answerQuiz('q1',this,false)">b) 10</div>
+        <div class="quiz-opt" data-correct="1" onclick="answerQuiz('q1',this,true)">c) 11</div>
+        <div class="quiz-opt" onclick="answerQuiz('q1',this,false)">d) 13</div>
+      </div>
+      <div class="quiz-feedback" id="q1fb"></div>
+    </div>
+
+    <!-- Q2 -->
+    <div class="quiz-box">
+      <div class="quiz-title">❓ SOAL 2 / 6</div>
+      <div class="quiz-question">Jika model punya residual $e_i = y_i - \hat{y}_i = -3$, apa artinya?</div>
+      <div class="quiz-options" id="q2opts">
+        <div class="quiz-opt" onclick="answerQuiz('q2',this,false)">a) Prediksi 3 unit lebih rendah dari aktual</div>
+        <div class="quiz-opt" data-correct="1" onclick="answerQuiz('q2',this,true)">b) Prediksi 3 unit lebih tinggi dari aktual</div>
+        <div class="quiz-opt" onclick="answerQuiz('q2',this,false)">c) Nilai aktual negatif</div>
+        <div class="quiz-opt" onclick="answerQuiz('q2',this,false)">d) Model tidak valid</div>
+      </div>
+      <div class="quiz-feedback" id="q2fb"></div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="quiz-box">
+      <div class="quiz-title">❓ SOAL 3 / 6</div>
+      <div class="quiz-question">Learning rate terlalu besar pada Gradient Descent menyebabkan?</div>
+      <div class="quiz-options" id="q3opts">
+        <div class="quiz-opt" onclick="answerQuiz('q3',this,false)">a) Konvergen lebih cepat ke minimum</div>
+        <div class="quiz-opt" onclick="answerQuiz('q3',this,false)">b) Konvergen tapi sangat lambat</div>
+        <div class="quiz-opt" data-correct="1" onclick="answerQuiz('q3',this,true)">c) Overshoot — J bisa malah naik (diverge)</div>
+        <div class="quiz-opt" onclick="answerQuiz('q3',this,false)">d) Parameter b₀ dan b₁ tidak berubah</div>
+      </div>
+      <div class="quiz-feedback" id="q3fb"></div>
+    </div>
+
+    <!-- Q4 -->
+    <div class="quiz-box">
+      <div class="quiz-title">❓ SOAL 4 / 6</div>
+      <div class="quiz-question">Sebuah model punya MAE = 2 tapi RMSE = 8. Apa kesimpulan yang paling tepat?</div>
+      <div class="quiz-options" id="q4opts">
+        <div class="quiz-opt" onclick="answerQuiz('q4',this,false)">a) Model sangat bagus karena MAE kecil</div>
+        <div class="quiz-opt" data-correct="1" onclick="answerQuiz('q4',this,true)">b) Ada satu atau beberapa outlier dengan error sangat besar</div>
+        <div class="quiz-opt" onclick="answerQuiz('q4',this,false)">c) RMSE selalu lebih besar dari MAE, jadi ini normal</div>
+        <div class="quiz-opt" onclick="answerQuiz('q4',this,false)">d) Data tidak linear, harus pakai model lain</div>
+      </div>
+      <div class="quiz-feedback" id="q4fb"></div>
+    </div>
+
+    <!-- Q5 -->
+    <div class="quiz-box">
+      <div class="quiz-title">❓ SOAL 5 / 6</div>
+      <div class="quiz-question">$R^2 = 0$ berarti?</div>
+      <div class="quiz-options" id="q5opts">
+        <div class="quiz-opt" onclick="answerQuiz('q5',this,false)">a) Model sempurna, tidak ada error</div>
+        <div class="quiz-opt" onclick="answerQuiz('q5',this,false)">b) Model salah 100% dari waktu</div>
+        <div class="quiz-opt" data-correct="1" onclick="answerQuiz('q5',this,true)">c) Model sama akuratnya dengan hanya menebak rata-rata $\bar{y}$</div>
+        <div class="quiz-opt" onclick="answerQuiz('q5',this,false)">d) Tidak ada hubungan antara X dan Y</div>
+      </div>
+      <div class="quiz-feedback" id="q5fb"></div>
+    </div>
+
+    <!-- Q6 -->
+    <div class="quiz-box">
+      <div class="quiz-title">❓ SOAL 6 / 6</div>
+      <div class="quiz-question">Kenapa RMSE lebih sering dilaporkan daripada MSE?</div>
+      <div class="quiz-options" id="q6opts">
+        <div class="quiz-opt" onclick="answerQuiz('q6',this,false)">a) RMSE selalu lebih kecil sehingga terlihat lebih baik</div>
+        <div class="quiz-opt" onclick="answerQuiz('q6',this,false)">b) RMSE lebih mudah dihitung secara komputasi</div>
+        <div class="quiz-opt" data-correct="1" onclick="answerQuiz('q6',this,true)">c) RMSE punya satuan sama dengan Y — lebih mudah diinterpretasi</div>
+        <div class="quiz-opt" onclick="answerQuiz('q6',this,false)">d) MSE tidak bisa digunakan untuk regresi linear</div>
+      </div>
+      <div class="quiz-feedback" id="q6fb"></div>
+    </div>
+
+    <!-- Final Result -->
+    <div id="quizFinal" style="display:none" class="concept-block">
+      <div class="concept-title">🎉 HASIL QUIZ</div>
+      <p class="concept-text" id="quizFinalMsg"></p>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════════════════
+       TAB 6 — OPTIMIZER
+       ══════════════════════════════════════════════════ -->
+  <div class="content-section" id="sec-optimizer">
+
+    <!-- Optimizer Sub-tabs -->
+    <div class="opt-subtabs" id="optSubtabs">
+      <button class="opt-subtab active" data-otab="singleparam" onclick="switchOptTab('singleparam')">📉 1 Parameter</button>
+      <button class="opt-subtab" data-otab="lossplane"   onclick="switchOptTab('lossplane')">🗺️ Loss Plane 2D+3D</button>
+      <button class="opt-subtab" data-otab="gd"          onclick="switchOptTab('gd')">⛷️ Gradient Descent</button>
+      <button class="opt-subtab" data-otab="nongradient" onclick="switchOptTab('nongradient')">🔍 Non-Gradient</button>
+      <button class="opt-subtab" data-otab="pso"         onclick="switchOptTab('pso')">🐝 PSO</button>
+    </div>
+
+    <!-- ════ SUB-TAB 1: SINGLE PARAMETER ════ -->
+    <div class="opt-section" id="opt-singleparam">
+
+      <div class="concept-block">
+        <div class="concept-title">📉 LANGKAH 1 — OPTIMASI 1 PARAMETER</div>
+        <p class="concept-text">
+          Sebelum bermain dengan 2 parameter sekaligus, mulai dari yang sederhana:
+          <strong>tetapkan b₀ (intercept), dan ubah hanya b₁ (slope)</strong>.
+          Grafik kiri menunjukkan bagaimana nilai J (MSE) berubah seiring perubahan b₁ —
+          berbentuk <em>parabola</em>. Titik terbawah parabola adalah nilai b₁ optimal untuk b₀ tersebut.<br><br>
+          Panah biru = arah gradient (∂J/∂b₁). Gradient Descent akan bergerak berlawanan arah panah.
+        </p>
+      </div>
+
+      <div class="concept-block" style="background:rgba(0,212,255,.04);border-color:rgba(0,212,255,.2);">
+        <div class="concept-title">🔑 KONSEP KUNCI — MENGAPA PARABOLA?</div>
+        <p class="concept-text">
+          MSE = rata-rata (y − b₁x − b₀)². Jika b₀ tetap, ini adalah fungsi <strong>kuadrat</strong> terhadap b₁:
+        </p>
+        <div>$$J(b_1) = \frac{1}{n}\sum_{i=1}^{n}(y_i - b_0 - b_1 x_i)^2 = A \cdot b_1^2 + B \cdot b_1 + C$$</div>
+        <p class="concept-text" style="margin-top:8px;">
+          di mana $A = \frac{1}{n}\sum x_i^2 > 0$ → <strong>selalu convex (cembung ke atas) → selalu ada 1 minimum global</strong>.
+          Minimum dicapai saat $\frac{dJ}{db_1} = 0$, yaitu $b_1^* = \frac{\sum x_i(y_i - b_0)}{\sum x_i^2}$.
+        </p>
+      </div>
+
+      <!-- Controls -->
+      <div class="lp-controls-bar">
+        <div class="lp-slider-group">
+          <div class="lp-slider-row">
+            <span class="lp-label">b₁ (ubah ini)</span>
+            <input type="range" id="sp1B1Slider" min="-1" max="4" step="0.02" value="0.0"
+              oninput="sp1UpdateB1(this.value)" style="flex:1"/>
+            <span class="lp-val" id="sp1B1Slider2">0.00</span>
+          </div>
+          <div class="lp-slider-row">
+            <span class="lp-label">b₀ (tetap)</span>
+            <input type="range" id="sp1B0FixedSlider" min="-2" max="7" step="0.1" value="2.8"
+              oninput="sp1UpdateB0Fixed(this.value)" style="flex:1"/>
+            <span class="lp-val" id="sp1B0FixedVal">2.80</span>
+          </div>
+        </div>
+        <div class="lp-btn-group">
+          <button class="ctrl-btn" onclick="sp1FindMin()">🎯 Cari Minimum</button>
+        </div>
+      </div>
+
+      <!-- 2 canvases: J(b1) curve + regression line preview -->
+      <div class="sp1-grid">
+        <div class="mini-graph-box" style="margin-bottom:0">
+          <div class="mini-graph-title">Kurva J(b₁) — b₀ tetap</div>
+          <canvas id="sp1Canvas" style="width:100%;height:auto;border-radius:8px;"></canvas>
+          <p class="graph-caption">Putih = posisimu &nbsp;|&nbsp; Hijau = minimum &nbsp;|&nbsp; Biru = arah update GD (berlawanan gradient)</p>
+        </div>
+        <div class="mini-graph-box" style="margin-bottom:0">
+          <div class="mini-graph-title">Preview Garis Regresi</div>
+          <canvas id="sp1LineCanvas" style="width:100%;height:auto;border-radius:8px;"></canvas>
+          <p class="graph-caption">Kuning = garis saat ini &nbsp;|&nbsp; Hijau samar = garis optimal OLS</p>
+        </div>
+      </div>
+
+      <!-- Info panel -->
+      <div class="graph-info-grid" style="margin-top:14px;">
+        <div class="info-box"><div class="info-label">b₁ saat ini</div><div class="info-val cyan" id="sp1B1Val">0.000</div></div>
+        <div class="info-box"><div class="info-label">J (MSE)</div><div class="info-val yellow" id="sp1J">—</div></div>
+        <div class="info-box"><div class="info-label">∂J/∂b₁ (gradient)</div><div class="info-val purple" id="sp1Grad">—</div></div>
+        <div class="info-box"><div class="info-label">b₁ optimal</div><div class="info-val green" id="sp1OptB1">—</div></div>
+        <div class="info-box"><div class="info-label">J optimal</div><div class="info-val green" id="sp1OptJ">—</div></div>
+        <div class="info-box"><div class="info-label">Gap dari optimal</div><div class="info-val" id="sp1Gap">—</div></div>
+      </div>
+
+      <div class="concept-block" style="margin-top:16px;">
+        <div class="concept-title">💡 APA YANG HARUS KAMU PERHATIKAN?</div>
+        <div class="assumption-list">
+          <div class="assumption-item"><span class="asm-icon">1️⃣</span>
+            <div>Geser b₁ ke kiri dan kanan — lihat J naik di kedua arah dari titik minimum. <strong>Ini adalah convexity!</strong></div></div>
+          <div class="assumption-item"><span class="asm-icon">2️⃣</span>
+            <div>Perhatikan <strong>panah biru</strong> (gradient) — arahnya selalu menunjuk "mendaki". GD bergerak <em>berlawanan</em> arah ini.</div></div>
+          <div class="assumption-item"><span class="asm-icon">3️⃣</span>
+            <div>Ubah b₀ fixed — kurva bergeser vertikal dan minimum b₁ berubah. <strong>Dua parameter saling mempengaruhi!</strong> Inilah kenapa kita perlu optimasi 2D (sub-tab berikutnya).</div></div>
+        </div>
+      </div>
+
+      <div style="text-align:center;margin-top:20px;">
+        <button class="btn-nav next" style="display:inline-flex;align-items:center;gap:8px;" onclick="switchOptTab('lossplane')">
+          Lanjut: Loss Plane 2D+3D →
+        </button>
+      </div>
+
+    </div><!-- end opt-singleparam -->
+
+    <!-- ════ SUB-TAB 2: LOSS PLANE ════ -->
+    <div class="opt-section" id="opt-lossplane">
+
+      <div class="concept-block">
+        <div class="concept-title">🗺️ LANGKAH 2 — OPTIMASI 2 PARAMETER SEKALIGUS</div>
+        <p class="concept-text">
+          Sekarang kita ubah <strong>b₀ dan b₁ bersamaan</strong>. Setiap kombinasi (b₀, b₁) menghasilkan
+          satu nilai J — ditampilkan sebagai <em>warna</em> di peta 2D dan <em>tinggi</em> di permukaan 3D.
+          Titik <strong>putih = posisimu</strong>, titik <strong>hijau = minimum global (OLS)</strong>.<br><br>
+          Grafik 2D dan 3D selalu <strong>sinkron</strong> — geser slider atau klik peta 2D, keduanya update bersamaan.
+        </p>
+      </div>
+
+      <div class="concept-block" style="background:rgba(139,92,246,.04);border-color:rgba(139,92,246,.2);">
+        <div class="concept-title">🔑 DARI 1D KE 2D — APA YANG BERUBAH?</div>
+        <p class="concept-text">
+          Di sub-tab sebelumnya, kurva J(b₁) adalah <em>potongan melintang</em> dari permukaan ini (satu garis horizontal di peta 2D).
+          Sekarang kita lihat <strong>seluruh permukaan sekaligus</strong>:
+        </p>
+        <div>$$J(b_0, b_1) = \frac{1}{n}\sum_{i=1}^{n}(y_i - b_0 - b_1 x_i)^2$$</div>
+        <p class="concept-text" style="margin-top:8px;">
+          Permukaan ini berbentuk <strong>"mangkuk" (elliptic paraboloid)</strong> — convex di semua arah.
+          Artinya hanya ada <strong>satu minimum global</strong>, tidak ada local minima yang bisa menjebak.
+        </p>
+      </div>
+
+      <!-- Slider controls -->
+      <div class="lp-controls-bar">
+        <div class="lp-slider-group">
+          <div class="lp-slider-row">
+            <span class="lp-label">b₀ (intercept)</span>
+            <input type="range" id="lpB0Slider" min="-3" max="8" step="0.05" value="3.0" oninput="lpUpdateB0(this.value)" style="flex:1"/>
+            <span class="lp-val" id="lpB0Val">3.00</span>
+          </div>
+          <div class="lp-slider-row">
+            <span class="lp-label">b₁ (slope)</span>
+            <input type="range" id="lpB1Slider" min="0" max="4" step="0.05" value="1.8" oninput="lpUpdateB1(this.value)" style="flex:1"/>
+            <span class="lp-val" id="lpB1Val">1.80</span>
+          </div>
+        </div>
+        <div class="lp-btn-group">
+          <button class="ctrl-btn" onclick="lpGoOptimal()">🎯 Ke Minimum</button>
+          <button class="ctrl-btn" onclick="lpRandomize()">🎲 Acak</button>
+        </div>
+      </div>
+
+      <!-- 2D + 3D side by side -->
+      <div class="lp-canvas-grid">
+        <div class="lp-canvas-wrap">
+          <div class="lp-canvas-label">📊 2D Contour — klik untuk pindah posisi</div>
+          <canvas id="lp2dCanvas" style="width:100%;height:auto;cursor:crosshair;border-radius:8px;"></canvas>
+        </div>
+        <div class="lp-canvas-wrap">
+          <div class="lp-canvas-label">🏔️ 3D Surface — drag untuk rotasi</div>
+          <canvas id="lp3dCanvas" style="width:100%;height:auto;cursor:grab;border-radius:8px;"></canvas>
+        </div>
+      </div>
+
+      <!-- 1D sweep -->
+      <div class="concept-block" style="margin-top:16px;">
+        <div class="concept-title">📈 POTONGAN MELINTANG — SWEEP SATU PARAMETER</div>
+        <p class="concept-text">
+          Tetapkan satu parameter, lihat bagaimana J berubah saat parameter lainnya disapu.
+          Ini adalah kurva yang sama seperti sub-tab sebelumnya — tapi sekarang kamu bisa memilih potongannya.
+        </p>
+        <div class="lp-fix-row" style="margin:10px 0;">
+          <span class="lp-fix-label">Tetapkan:</span>
+          <button class="lp-fix-btn active ctrl-btn" data-fix="b1" onclick="lpSetFixed('b1')">b₁ tetap, sweep b₀</button>
+          <button class="lp-fix-btn ctrl-btn" data-fix="b0" onclick="lpSetFixed('b0')">b₀ tetap, sweep b₁</button>
+        </div>
+        <canvas id="lp1dCanvas" style="width:100%;height:auto;border-radius:8px;"></canvas>
+        <p class="graph-caption">Putih = posisimu &nbsp;|&nbsp; Hijau = minimum sweep &nbsp;|&nbsp; Kurva ini = "irisan" dari peta 2D di atas</p>
+      </div>
+
+      <!-- Info grid -->
+      <div class="lp-info-grid" style="margin-top:14px;">
+        <div class="lp-info-box"><div class="lp-info-label">b₀ saat ini</div><div class="lp-info-val" id="lpB0Display" style="color:var(--accent-purple)">3.000</div></div>
+        <div class="lp-info-box"><div class="lp-info-label">b₁ saat ini</div><div class="lp-info-val" id="lpB1Display" style="color:var(--accent-cyan)">1.800</div></div>
+        <div class="lp-info-box"><div class="lp-info-label">J kamu</div><div class="lp-info-val" id="lpJDisplay" style="color:var(--accent-yellow)">—</div></div>
+        <div class="lp-info-box"><div class="lp-info-label">b₀ optimal</div><div class="lp-info-val" id="lpOptB0" style="color:var(--accent-green)">—</div></div>
+        <div class="lp-info-box"><div class="lp-info-label">b₁ optimal</div><div class="lp-info-val" id="lpOptB1" style="color:var(--accent-green)">—</div></div>
+        <div class="lp-info-box"><div class="lp-info-label">Gap dari min</div><div class="lp-info-val" id="lpGap" style="color:var(--accent-red)">—</div></div>
+      </div>
+
+      <div style="text-align:center;margin-top:20px;">
+        <button class="btn-nav next" style="display:inline-flex;align-items:center;gap:8px;" onclick="switchOptTab('gd')">
+          Lanjut: Gradient Descent →
+        </button>
+      </div>
+
+    </div><!-- end opt-lossplane -->
+
+    <!-- ════ SUB-TAB 3: GRADIENT DESCENT ════ -->
+    <div class="opt-section" id="opt-gd">
+
+      <div class="concept-block">
+        <div class="concept-title">⛷️ LANGKAH 3 — GRADIENT DESCENT OTOMATIS</div>
+        <p class="concept-text">
+          Setelah paham bentuk loss surface di sub-tab sebelumnya, sekarang kita <strong>biarkan algoritma
+          menemukan minimum secara otomatis</strong>. Gradient Descent "menuruni bukit" dengan mengikuti
+          arah gradient negatif — langkah demi langkah, iterasi demi iterasi.<br><br>
+          Perhatikan: <strong>path kuning di peta 2D/3D (sub-tab sebelumnya)</strong> bergerak mengikuti GD secara real-time!
+          Klik tab Loss Plane untuk melihat jalurnya di peta.
+        </p>
+      </div>
+
+      <!-- GD controls -->
+      <div class="gd-controls-grid">
+        <div class="gd-ctrl-group">
+          <div class="ctrl-label">Learning Rate α <span id="optGdLrVal">0.0050</span></div>
+          <input type="range" id="optGdLrSlider" min="0.0001" max="0.02" step="0.0001" value="0.005" oninput="optGdUpdateLR(this.value)"/>
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-top:2px;">
+            <span>Lambat</span><span>Optimal ≈0.005</span><span>⚠️ Diverge</span>
+          </div>
+        </div>
+        <div class="gd-ctrl-group">
+          <div class="ctrl-label">Step per frame <span id="optGdIterVal">5</span></div>
+          <input type="range" id="optGdIterSlider" min="1" max="50" step="1" value="5" oninput="optGdUpdateIter(this.value)"/>
+        </div>
+        <div class="gd-ctrl-group">
+          <div class="ctrl-label">Initial b₀ <span id="optGdInitB0Val">0.0</span></div>
+          <input type="range" id="optGdInitB0Slider" min="-3" max="7" step="0.1" value="0" oninput="optGdUpdateInitB0(this.value)"/>
+        </div>
+        <div class="gd-ctrl-group">
+          <div class="ctrl-label">Initial b₁ <span id="optGdInitB1Val">0.0</span></div>
+          <input type="range" id="optGdInitB1Slider" min="-1" max="4" step="0.1" value="0" oninput="optGdUpdateInitB1(this.value)"/>
+        </div>
+      </div>
+
+      <div class="gd-btn-row">
+        <button class="btn-gd start" id="optGdStartBtn" onclick="optGdToggle()">▶ Mulai / Pause</button>
+        <button class="btn-gd step-btn" onclick="optGdStep()">⏭ +1 Step</button>
+        <button class="btn-gd reset" onclick="optGdReset()">↺ Reset</button>
+      </div>
+
+      <canvas id="optGdCanvas" style="width:100%;height:auto;border-radius:8px;"></canvas>
+      <canvas id="optLossCanvas" style="margin-top:10px;width:100%;height:auto;border-radius:8px;border:1px solid var(--border);"></canvas>
+
+      <div class="graph-info-grid" style="margin-top:14px;">
+        <div class="info-box"><div class="info-label">Iterasi</div><div class="info-val cyan" id="optGdIter">0</div></div>
+        <div class="info-box"><div class="info-label">MSE saat ini</div><div class="info-val green" id="optGdMSE">—</div></div>
+        <div class="info-box"><div class="info-label">b₀</div><div class="info-val purple" id="optGdB0">0.0000</div></div>
+        <div class="info-box"><div class="info-label">b₁</div><div class="info-val cyan" id="optGdB1">0.0000</div></div>
+        <div class="info-box"><div class="info-label">Δb₀ dari optimal</div><div class="info-val yellow" id="optGdDb0">—</div></div>
+        <div class="info-box"><div class="info-label">Δb₁ dari optimal</div><div class="info-val yellow" id="optGdDb1">—</div></div>
+      </div>
+
+      <div class="gd-log" id="optGdLog">
+        <div class="log-line" style="color:var(--text-muted);">// Log iterasi muncul di sini...</div>
+      </div>
+
+      <div class="concept-block" style="margin-top:16px;">
+        <div class="concept-title">🔗 HUBUNGKAN DENGAN LOSS PLANE</div>
+        <p class="concept-text">
+          Setelah jalankan GD, klik tab <strong>"Loss Plane 2D+3D"</strong> —
+          kamu akan melihat <em>jejak kuning</em> path GD di atas peta kontur 2D dan permukaan 3D.
+          Bandingkan: jalur GD mengikuti <strong>lembah terdalam</strong> dari permukaan loss.
+        </p>
+        <button class="ctrl-btn" onclick="switchOptTab('lossplane')">👁️ Lihat Path di Loss Plane</button>
+      </div>
+
+    </div><!-- end opt-gd -->
+
+    <!-- ════ SUB-TAB 4: NON-GRADIENT ════ -->
+    <div class="opt-section" id="opt-nongradient">
+
+      <div class="concept-block">
+        <div class="concept-title">🔍 NON-GRADIENT OPTIMIZER</div>
+        <p class="concept-text">
+          Tidak semua fungsi loss bisa diturunkan. Kadang kita butuh optimizer yang
+          <strong>tidak perlu gradient</strong> — hanya evaluasi nilai J di berbagai titik.
+          Titik-titik yang dievaluasi juga muncul di <strong>peta Loss Plane</strong> secara real-time.
+        </p>
+        <div class="opt-compare-grid">
+          <div class="opt-compare-card">
+            <div class="opt-compare-title" style="color:var(--accent-cyan)">Grid Search</div>
+            <p class="concept-text" style="font-size:13px;">Bagi ruang parameter jadi grid N×N. Evaluasi semua sel secara sistematis. <strong>Exhaustive — tidak melewatkan minimum jika grid cukup halus.</strong></p>
+            <div class="info-chips" style="margin-top:8px;">
+              <span class="chip chip-green">✅ Tidak butuh gradient</span>
+              <span class="chip chip-yellow">⚠️ O(N²) evaluasi</span>
+              <span class="chip chip-red">❌ Buruk dimensi tinggi</span>
+            </div>
+          </div>
+          <div class="opt-compare-card">
+            <div class="opt-compare-title" style="color:var(--accent-purple)">Random Search</div>
+            <p class="concept-text" style="font-size:13px;">Sample titik secara acak, simpan yang terbaik. Lebih efisien dari Grid Search untuk dimensi tinggi (Bergstra & Bengio, 2012).</p>
+            <div class="info-chips" style="margin-top:8px;">
+              <span class="chip chip-green">✅ Parallelizable</span>
+              <span class="chip chip-green">✅ Efisien dimensi tinggi</span>
+              <span class="chip chip-yellow">⚠️ Tidak ada garansi optimal</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sub-sub tabs -->
+      <div class="ng-tabs">
+        <button class="ng-tab active" data-ng="grid" onclick="switchNGTab('grid')">📐 Grid Search</button>
+        <button class="ng-tab" data-ng="random" onclick="switchNGTab('random')">🎲 Random Search</button>
+      </div>
+
+      <!-- Grid Search -->
+      <div class="ng-section ng-visible" id="ng-grid">
+        <div class="concept-block">
+          <div class="concept-title">📐 ALGORITMA GRID SEARCH</div>
+          <div class="algo-block">
+            <div class="algo-line"><span class="algo-kw">INPUT:</span> batas b₀, b₁, grid size N</div>
+            <div class="algo-line"><span class="algo-kw">FOR</span> i=0..N-1, j=0..N-1:</div>
+            <div class="algo-indent algo-line">b₀ = b₀_min + (i+0.5)×(b₀_max-b₀_min)/N</div>
+            <div class="algo-indent algo-line">b₁ = b₁_min + (j+0.5)×(b₁_max-b₁_min)/N</div>
+            <div class="algo-indent algo-line">J = MSE(b₀, b₁) → simpan jika terbaik</div>
+            <div class="algo-line"><span class="algo-kw">RETURN</span> (b₀_best, b₁_best)</div>
+          </div>
+        </div>
+        <div class="graph-container">
+          <div class="graph-header">
+            <div class="graph-title">📐 GRID SEARCH VISUALIZER</div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <span style="font-size:12px;color:var(--text-muted);">Grid N:</span>
+              <input type="range" id="gsGridSlider" min="4" max="16" step="1" value="8" style="width:90px;" oninput="gsSetGrid(this.value)"/>
+              <span id="gsGridVal" style="font-family:monospace;color:var(--accent-cyan);font-size:12px;">8×8</span>
+            </div>
+          </div>
+          <div class="gd-btn-row">
+            <button class="btn-gd start" id="gsStartBtn" onclick="gsStart()">▶ Mulai</button>
+            <button class="btn-gd reset" onclick="gsReset()">↺ Reset</button>
+          </div>
+          <canvas id="gsCanvas" style="width:100%;height:auto;border-radius:8px;"></canvas>
+          <div class="graph-info-grid" style="margin-top:12px;">
+            <div class="info-box"><div class="info-label">Dikunjungi</div><div class="info-val cyan" id="gsVisited">0</div></div>
+            <div class="info-box"><div class="info-label">Grid Size</div><div class="info-val purple" id="gsGrid">8×8</div></div>
+            <div class="info-box"><div class="info-label">Best b₀</div><div class="info-val green" id="gsBestB0">—</div></div>
+            <div class="info-box"><div class="info-label">Best b₁</div><div class="info-val green" id="gsBestB1">—</div></div>
+            <div class="info-box"><div class="info-label">Best J</div><div class="info-val yellow" id="gsBestJ">—</div></div>
+            <div class="info-box"><div class="info-label">Optimal J</div><div class="info-val cyan" id="gsOptJ">—</div></div>
+          </div>
+        </div>
+        <div class="concept-block">
+          <div class="concept-title">⚠️ CURSE OF DIMENSIONALITY</div>
+          <p class="concept-text">2 param, N=10 → 100 eval. 10 param, N=10 → <strong>10¹⁰ = 10 miliar!</strong> Itulah kenapa Grid Search tidak praktis untuk model besar.</p>
+        </div>
+      </div>
+
+      <!-- Random Search -->
+      <div class="ng-section" id="ng-random">
+        <div class="concept-block">
+          <div class="concept-title">🎲 ALGORITMA RANDOM SEARCH</div>
+          <div class="algo-block">
+            <div class="algo-line"><span class="algo-kw">INPUT:</span> batas parameter, jumlah sampel K</div>
+            <div class="algo-line"><span class="algo-kw">FOR</span> k=1..K:</div>
+            <div class="algo-indent algo-line">b₀ ~ Uniform(b₀_min, b₀_max)</div>
+            <div class="algo-indent algo-line">b₁ ~ Uniform(b₁_min, b₁_max)</div>
+            <div class="algo-indent algo-line">J = MSE(b₀, b₁) → simpan jika terbaik</div>
+            <div class="algo-line"><span class="algo-kw">RETURN</span> (b₀_best, b₁_best)</div>
+          </div>
+        </div>
+        <div class="graph-container">
+          <div class="graph-header">
+            <div class="graph-title">🎲 RANDOM SEARCH VISUALIZER</div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <span style="font-size:12px;color:var(--text-muted);">Sampel:</span>
+              <input type="range" id="rsNSlider" min="20" max="300" step="10" value="100" style="width:90px;" oninput="rsSetN(this.value)"/>
+              <span id="rsNVal" style="font-family:monospace;color:var(--accent-cyan);font-size:12px;">100</span>
+            </div>
+          </div>
+          <div class="gd-btn-row">
+            <button class="btn-gd start" id="rsStartBtn" onclick="rsStart()">▶ Mulai</button>
+            <button class="btn-gd reset" onclick="rsReset()">↺ Reset</button>
+          </div>
+          <canvas id="rsCanvas" style="width:100%;height:auto;border-radius:8px;"></canvas>
+          <div class="graph-info-grid" style="margin-top:12px;">
+            <div class="info-box"><div class="info-label">Dikunjungi</div><div class="info-val cyan" id="rsVisited">0</div></div>
+            <div class="info-box"><div class="info-label">Best b₀</div><div class="info-val green" id="rsBestB0">—</div></div>
+            <div class="info-box"><div class="info-label">Best b₁</div><div class="info-val green" id="rsBestB1">—</div></div>
+            <div class="info-box"><div class="info-label">Best J</div><div class="info-val yellow" id="rsBestJ">—</div></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end opt-nongradient -->
+
+    <!-- ════ SUB-TAB 5: PSO ════ -->
+    <div class="opt-section" id="opt-pso">
+
+      <div class="concept-block">
+        <div class="concept-title">🐝 PARTICLE SWARM OPTIMIZATION</div>
+        <p class="concept-text">
+          PSO terinspirasi dari <strong>kawanan burung</strong> mencari makanan. Setiap partikel = satu
+          kandidat (b₀, b₁), dibimbing oleh pengalaman pribadi terbaik (<em>pBest</em>) dan
+          terbaik seluruh kawanan (<em>gBest</em>). <strong>Tidak butuh gradient sama sekali.</strong>
+        </p>
+        <div class="pso-analogy">
+          <div class="pso-analogy-item"><span class="pso-emoji">🐦</span><div><strong>Partikel</strong> = kandidat solusi (b₀, b₁)</div></div>
+          <div class="pso-analogy-item"><span class="pso-emoji">📍</span><div><strong>pBest</strong> = posisi terbaik partikel ini sendiri</div></div>
+          <div class="pso-analogy-item"><span class="pso-emoji">🏆</span><div><strong>gBest</strong> = terbaik seluruh kawanan</div></div>
+          <div class="pso-analogy-item"><span class="pso-emoji">💨</span><div><strong>Velocity</strong> = arah dan kecepatan gerak</div></div>
+        </div>
+      </div>
+
+      <!-- PSO math derivation -->
+      <div class="derivation-box" id="deriv-pso">
+        <div class="derivation-header">
+          <div class="derivation-title">⚡ MEKANISME MATEMATIKA PSO</div>
+          <div class="deriv-controls">
+            <button class="deriv-btn" onclick="derivPrev('deriv-pso')" id="prev-deriv-pso">← Prev</button>
+            <span class="deriv-counter" id="counter-deriv-pso">1 / 6</span>
+            <button class="deriv-btn primary" onclick="derivNext('deriv-pso')" id="next-deriv-pso">Next →</button>
+            <button class="deriv-btn auto" id="auto-deriv-pso" onclick="derivAutoPlay('deriv-pso')">▶ Auto</button>
+            <button class="deriv-btn reset" onclick="derivReset('deriv-pso')">↺</button>
+          </div>
+        </div>
+        <div class="d-step d-visible"><div class="step-badge">1</div><div class="step-body">
+          <div class="step-label">State setiap partikel i pada iterasi t</div>
+          <div>$$\mathbf{x}_i^t = (b_0^i,\, b_1^i) \quad\text{posisi} \qquad \mathbf{v}_i^t = (v_{b_0}^i,\, v_{b_1}^i) \quad\text{kecepatan}$$</div>
+          <div class="step-note">Setiap partikel punya posisi (solusi kandidat) dan kecepatan (arah gerak). Keduanya di-update setiap iterasi.</div>
+        </div></div>
+        <div class="d-step d-hidden"><div class="step-badge">2</div><div class="step-body">
+          <div class="step-label">Update kecepatan — 3 komponen</div>
+          <div>$$\mathbf{v}_i^{t+1} = \underbrace{w \cdot \mathbf{v}_i^t}_{\text{inersia}} + \underbrace{c_1 r_1 (\text{pBest}_i - \mathbf{x}_i^t)}_{\text{kognitif}} + \underbrace{c_2 r_2 (\text{gBest} - \mathbf{x}_i^t)}_{\text{sosial}}$$</div>
+          <div class="step-note">$w$=inertia (momentum) &nbsp;|&nbsp; $c_1$=tarik ke pBest sendiri &nbsp;|&nbsp; $c_2$=tarik ke gBest kawanan &nbsp;|&nbsp; $r_1,r_2\sim U(0,1)$=random</div>
+        </div></div>
+        <div class="d-step d-hidden"><div class="step-badge">3</div><div class="step-body">
+          <div class="step-label">Update posisi</div>
+          <div>$$\mathbf{x}_i^{t+1} = \mathbf{x}_i^t + \mathbf{v}_i^{t+1}$$</div>
+          <div class="step-note">Sederhana! Tidak ada turunan, tidak ada gradient. Posisi baru = posisi lama + kecepatan baru.</div>
+        </div></div>
+        <div class="d-step d-hidden"><div class="step-badge">4</div><div class="step-body">
+          <div class="step-label">Update pBest dan gBest</div>
+          <div>$$\text{pBest}_i \leftarrow \mathbf{x}_i^{t+1} \text{ jika } J(\mathbf{x}_i^{t+1}) < J(\text{pBest}_i)$$</div>
+          <div>$$\text{gBest} \leftarrow \arg\min_i\, J(\text{pBest}_i)$$</div>
+          <div class="step-note">Setiap partikel mengingat posisi terbaiknya. gBest = terbaik dari semua pBest.</div>
+        </div></div>
+        <div class="d-step d-hidden"><div class="step-badge">5</div><div class="step-body">
+          <div class="step-label">Efek hyperparameter w (inertia)</div>
+          <div class="lr-comparison">
+            <div class="lr-case lr-small">$w$ besar ≈1.0 → partikel bergerak liar, eksplorasi luas</div>
+            <div class="lr-case lr-good">$w$ sedang ≈0.7 → keseimbangan eksplorasi & eksploitasi</div>
+            <div class="lr-case lr-big">$w$ kecil ≈0.3 → konvergen cepat, bisa terjebak local optima</div>
+          </div>
+        </div></div>
+        <div class="d-step d-hidden"><div class="step-badge result">6 ✓</div><div class="step-body">
+          <div class="step-label result-label">✅ PERBANDINGAN PSO vs GD vs Grid Search</div>
+          <div style="overflow-x:auto;">
+            <table class="data-table" style="min-width:420px;margin-top:10px;">
+              <thead><tr><th>Aspek</th><th style="color:var(--accent-cyan)">GD</th><th style="color:var(--accent-purple)">PSO</th><th style="color:var(--accent-yellow)">Grid</th></tr></thead>
+              <tbody>
+                <tr><td>Butuh gradient?</td><td>✅ Ya</td><td>❌ Tidak</td><td>❌ Tidak</td></tr>
+                <tr><td>Local optima</td><td>⚠️ Bisa terjebak</td><td>🟢 Lebih tahan</td><td>🟢 Exhaustive</td></tr>
+                <tr><td>Skala dimensi</td><td>🟢 Sangat baik</td><td>🟡 Puluhan param</td><td>🔴 Sangat buruk</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="step-note result-note">PSO cocok untuk loss function non-differentiable, diskrit, atau sangat kompleks (hyperparameter tuning, NAS).</div>
+        </div></div>
+      </div>
+
+      <!-- PSO controls -->
+      <div class="graph-container">
+        <div class="graph-header"><div class="graph-title">🐝 PSO VISUALIZER</div></div>
+        <div class="pso-controls-grid">
+          <div class="gd-ctrl-group"><div class="ctrl-label">Partikel N <span id="psoNVal">20</span></div>
+            <input type="range" id="psoNSlider" min="5" max="50" step="5" value="20" oninput="psoSetN(this.value)"/></div>
+          <div class="gd-ctrl-group"><div class="ctrl-label">Inertia w <span id="psoWVal">0.70</span></div>
+            <input type="range" id="psoWSlider" min="0.1" max="1.0" step="0.05" value="0.7" oninput="psoSetW(this.value)"/></div>
+          <div class="gd-ctrl-group"><div class="ctrl-label">Cognitive c₁ <span id="psoC1Val">1.5</span></div>
+            <input type="range" id="psoC1Slider" min="0.5" max="3.0" step="0.1" value="1.5" oninput="psoSetC1(this.value)"/></div>
+          <div class="gd-ctrl-group"><div class="ctrl-label">Social c₂ <span id="psoC2Val">1.5</span></div>
+            <input type="range" id="psoC2Slider" min="0.5" max="3.0" step="0.1" value="1.5" oninput="psoSetC2(this.value)"/></div>
+        </div>
+        <div class="gd-btn-row">
+          <button class="btn-gd start" id="psoStartBtn" onclick="psoStart()">▶ Mulai</button>
+          <button class="btn-gd step-btn" onclick="psoStep1()">⏭ +1 Iter</button>
+          <button class="btn-gd reset" onclick="psoReset()">↺ Reset</button>
+        </div>
+        <canvas id="psoCanvas" style="width:100%;height:auto;border-radius:8px;"></canvas>
+        <div class="pso-legend">
+          <div class="pso-legend-item"><span class="pso-dot" style="background:var(--accent-cyan)"></span>Partikel (warna unik)</div>
+          <div class="pso-legend-item"><span class="pso-dot pso-square" style="background:rgba(255,255,255,.3)"></span>pBest</div>
+          <div class="pso-legend-item"><span class="pso-dot" style="background:var(--accent-yellow)"></span>gBest</div>
+          <div class="pso-legend-item"><span class="pso-dot" style="background:var(--accent-green)"></span>Optimal OLS</div>
+        </div>
+        <div class="graph-info-grid" style="margin-top:12px;">
+          <div class="info-box"><div class="info-label">Iterasi</div><div class="info-val cyan" id="psoIter">0</div></div>
+          <div class="info-box"><div class="info-label">Partikel</div><div class="info-val purple" id="psoN">20</div></div>
+          <div class="info-box"><div class="info-label">gBest b₀</div><div class="info-val green" id="psoBestB0">—</div></div>
+          <div class="info-box"><div class="info-label">gBest b₁</div><div class="info-val green" id="psoBestB1">—</div></div>
+          <div class="info-box"><div class="info-label">gBest J</div><div class="info-val yellow" id="psoBestJ">—</div></div>
+          <div class="info-box"><div class="info-label">Optimal J</div><div class="info-val cyan" id="psoOptJ">—</div></div>
+        </div>
+      </div>
+
+    </div><!-- end opt-pso -->
+
+  </div><!-- end sec-optimizer -->
+
+  <!-- Prev / Next Navigation -->
+  <div class="lesson-nav">
+    <button class="btn-nav prev" id="btnPrev" onclick="goPrev()" disabled>← Sebelumnya</button>
+    <button class="btn-nav next" id="btnNext" onclick="goNext()">Lanjut →</button>
+  </div>
+
+  </div><!-- end content-main -->
+
+  <!-- ═══ RIGHT SIDEBAR ═══ -->
+  <aside class="lesson-sidebar">
+    <div class="toc-box">
+      <div class="toc-title">📋 DAFTAR ISI</div>
+      <ul class="toc-list">
+        <li><div class="toc-link" data-tab="konsep"      onclick="switchTab('konsep')">1. Konsep &amp; Intuisi</div></li>
+        <li><div class="toc-link" data-tab="model"       onclick="switchTab('model')">2. Model Matematika</div></li>
+        <li><div class="toc-link" data-tab="cost"        onclick="switchTab('cost')">3. Cost Function / MSE</div></li>
+        <li><div class="toc-link" data-tab="derivasi"    onclick="switchTab('derivasi')">4. Turunan &amp; Derivasi</div></li>
+        <li><div class="toc-link" data-tab="grafik"      onclick="switchTab('grafik')">5. Grafik Regresi</div></li>
+        <li><div class="toc-link" data-tab="optimizer"   onclick="switchTab('optimizer')">6. Optimizer</div></li>
+        <li><div class="toc-link" data-tab="evaluasi"    onclick="switchTab('evaluasi')">7. Evaluasi Model</div></li>
+        <li><div class="toc-link" data-tab="quiz"        onclick="switchTab('quiz')">8. Quiz</div></li>
+      </ul>
+    </div>
+
+    <div class="toc-box">
+      <div class="toc-title">⚡ PROGRESS</div>
+      <div style="margin-bottom:8px;">
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-muted);margin-bottom:4px;">
+          <span>Regresi Linear</span><span id="progressPct">0%</span>
+        </div>
+        <div style="height:8px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden;">
+          <div id="progressBar" style="height:100%;background:var(--gradient-main);border-radius:4px;width:0%;transition:width 0.5s;"></div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);" id="progressSubtext">0 dari 10 bab selesai</div>
+    </div>
+
+    <div class="achievement-box">
+      <div class="ach-title">🏅 PENCAPAIAN</div>
+      <div class="ach-item" id="ach1">
+        <div class="ach-icon">🧮</div>
+        <div class="ach-info"><div class="ach-name">Matematikawan</div><div class="ach-desc">Selesaikan derivasi OLS</div></div>
+      </div>
+      <div class="ach-item locked-ach" id="ach2">
+        <div class="ach-icon">🎨</div>
+        <div class="ach-info"><div class="ach-name">Pelukis Data</div><div class="ach-desc">Tambah 10+ titik di grafik</div></div>
+      </div>
+      <div class="ach-item locked-ach" id="ach3">
+        <div class="ach-icon">⛷️</div>
+        <div class="ach-info"><div class="ach-name">Gradient Rider</div><div class="ach-desc">GD konvergen 50+ iterasi</div></div>
+      </div>
+      <div class="ach-item locked-ach" id="ach4">
+        <div class="ach-icon">🏆</div>
+        <div class="ach-info"><div class="ach-name">Quiz Master</div><div class="ach-desc">Skor quiz ≥ 4/6</div></div>
+      </div>
+    </div>
+  </aside>
+
+  </div><!-- end lesson-body -->
+</div><!-- end lesson-content -->
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+<div class="toast" id="toast"></div>
+
+<script src="../js/main.js"></script>
+<script src="../js/particles.js"></script>
+<script src="../js/formula-graphs.js"></script>
+<script src="../js/regression-graph.js"></script>
+<script src="../js/cost-surface.js"></script>
+<script src="../js/loss-plane.js"></script>
+<script src="../js/gradient-descent.js"></script>
+<script src="../js/metric-demo.js"></script>
+<script src="../js/optimizer.js"></script>
+<script src="../js/lesson-logic.js"></script>
+<script>
+  // Optimizer sub-tab switcher
+  function switchOptTab(tabId) {
+    // Hide all opt-sections by removing opt-visible class
+    document.querySelectorAll('.opt-section').forEach(s => {
+      s.classList.remove('opt-visible');
+      s.style.display = '';
+    });
+    // Show target
+    document.querySelectorAll('.opt-subtab').forEach(b => b.classList.toggle('active', b.dataset.otab === tabId));
+    const el = document.getElementById('opt-' + tabId);
+    if (el) el.classList.add('opt-visible');
+    // Init on first visit
+    if (tabId === 'singleparam' && !window._spInit) {
+      window._spInit = true;
+      if (window.initSingleParam) initSingleParam();
+    }
+    if (tabId === 'lossplane' && !window._lpInit) {
+      window._lpInit = true;
+      if (window.initLossPlaneInteractive) initLossPlaneInteractive();
+    }
+    if (tabId === 'gd' && !window._gdOptInit) {
+      window._gdOptInit = true;
+      if (window.initGradientDescent) initGradientDescent();
+    }
+    if (tabId === 'nongradient') {
+      if (!window._gsInit) { window._gsInit=true; if(window.initGridSearch) initGridSearch(); }
+      if (!window._rsInit) { window._rsInit=true; if(window.initRandomSearch) initRandomSearch(); }
+      // ensure grid tab is shown by default
+      if (window.switchNGTab) switchNGTab('grid');
+      const j = window.optMSE && window.OPT_OPTIMAL ? optMSE(OPT_OPTIMAL.b0,OPT_OPTIMAL.b1).toFixed(4) : '—';
+      const el2=document.getElementById('gsOptJ'); if(el2) el2.textContent=j;
+    }
+    if (tabId === 'pso') {
+      if (!window._psoInit) { window._psoInit=true; if(window.initPSO) initPSO(); if(window.initDerivation) initDerivation('deriv-pso'); }
+      const el3=document.getElementById('psoOptJ');
+      if(el3 && window.optMSE && window.OPT_OPTIMAL) el3.textContent=optMSE(OPT_OPTIMAL.b0,OPT_OPTIMAL.b1).toFixed(4);
+    }
+  }
+  // Non-gradient sub-tab switcher
+  function switchNGTab(tabId) {
+    document.querySelectorAll('.ng-section').forEach(s => {
+      s.classList.remove('ng-visible');
+      s.style.display = '';
+    });
+    document.querySelectorAll('.ng-tab').forEach(b => b.classList.toggle('active', b.dataset.ng === tabId));
+    const el = document.getElementById('ng-' + tabId);
+    if (el) el.classList.add('ng-visible');
+  }
+  // Method switcher for derivation tabs
+  function switchMethod(m) {
+    document.getElementById('method-ols').style.display = m==='ols'?'block':'none';
+    document.getElementById('method-gd').style.display  = m==='gd'?'block':'none';
+    document.getElementById('mtOLS').classList.toggle('active', m==='ols');
+    document.getElementById('mtGD').classList.toggle('active', m==='gd');
+    if(m==='ols' && !window._olsInitDone) {
+      window._olsInitDone=true;
+      if(window.initDerivation) initDerivation('deriv-ols');
+    }
+    if(m==='gd' && !window._gdDerivInitDone) {
+      window._gdDerivInitDone=true;
+      if(window.initDerivation) initDerivation('deriv-gd');
+    }
+  }
+  // Slope effect canvas on tab 2 is same component — re-use same canvas ID aliased
+  // The canvas fgSlopeEffect2 on tab 2 redraws same logic
+  document.addEventListener('DOMContentLoaded', function(){
+    const c=document.getElementById('fgSlopeEffect2');
+    if(c&&window.CanvasRenderingContext2D){
+      // mirror the slope effect animation into the second canvas
+      const ctx2=c.getContext('2d');
+      let t2=0;
+      function drawSlope2(){
+        const W=c.width,H=c.height;
+        ctx2.clearRect(0,0,W,H);
+        ctx2.fillStyle='rgba(0,0,0,0.2)'; ctx2.roundRect(0,0,W,H,10); ctx2.fill();
+        const PAD={l:36,r:16,t:20,b:36};
+        const PW=W-PAD.l-PAD.r,PH=H-PAD.t-PAD.b;
+        const toCx=x=>PAD.l+x/10*PW,toCy=y=>PAD.t+(1-y/20)*PH;
+        const slopes=[{b1:-1,c:'rgba(239,68,68,0.5)'},{b1:0,c:'rgba(245,158,11,0.5)'},{b1:1.8,c:'rgba(0,212,255,0.8)'},{b1:3,c:'rgba(139,92,246,0.5)'}];
+        slopes.forEach(({b1,c})=>{
+          ctx2.strokeStyle=c;ctx2.lineWidth=b1===1.8?2.5:1.5;
+          ctx2.beginPath();ctx2.moveTo(toCx(0),toCy(3));ctx2.lineTo(toCx(10),toCy(b1*10+3));ctx2.stroke();
+        });
+        const animB1=1.8+Math.sin(t2*0.02)*1.5;
+        ctx2.strokeStyle='rgba(255,255,255,0.6)';ctx2.lineWidth=2;
+        ctx2.beginPath();ctx2.moveTo(toCx(0),toCy(3));ctx2.lineTo(toCx(10),toCy(animB1*10+3));ctx2.stroke();
+        ctx2.font='bold 11px Orbitron,monospace';ctx2.fillStyle='rgba(255,255,255,0.9)';ctx2.textAlign='center';
+        ctx2.fillText(`b₁=${animB1.toFixed(1)}`,W/2,PAD.t+14);
+        t2++; requestAnimationFrame(drawSlope2);
+      }
+      drawSlope2();
+    }
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LearnLab — Kuasai Ilmu Seperti Game</title>
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <!-- KaTeX for math rendering -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
+</head>
+<body class="home-page">
+
+  <!-- Particle background canvas -->
+  <canvas id="bg-particles"></canvas>
+
+  <!-- Top Navigation Bar -->
+  <nav class="topbar" id="topbar">
+    <div class="topbar-left">
+      <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle Sidebar">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="logo">
+        <span class="logo-icon">⬡</span>
+        <span class="logo-text">Learn<span class="logo-accent">Lab</span></span>
+      </div>
+    </div>
+    <div class="topbar-center">
+      <div class="xp-bar-wrap">
+        <span class="xp-label">XP</span>
+        <div class="xp-bar">
+          <div class="xp-fill" id="xpFill" style="width: 35%"></div>
+        </div>
+        <span class="xp-val" id="xpVal">350 / 1000</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="player-badge">
+        <span class="player-level" id="playerLevel">Lv.3</span>
+        <span class="player-name">Pelajar</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-inner">
+      <div class="sidebar-header">
+        <span class="sidebar-title">Peta Ilmu</span>
+      </div>
+
+      <!-- Search -->
+      <div class="sidebar-search">
+        <input type="text" placeholder="Cari materi..." id="searchInput" />
+        <span class="search-icon">🔍</span>
+      </div>
+
+      <nav class="sidebar-nav" id="sidebarNav">
+
+        <!-- Machine Learning -->
+        <div class="nav-category active" id="cat-ml">
+          <div class="nav-category-header" onclick="toggleCategory('cat-ml')">
+            <span class="cat-icon">🤖</span>
+            <span class="cat-name">Machine Learning</span>
+            <span class="cat-arrow">▾</span>
+            <span class="cat-badge unlocked">UNLOCKED</span>
+          </div>
+          <div class="nav-category-body">
+
+            <!-- Sub: Regresi -->
+            <div class="nav-topic active" id="topic-regresi">
+              <div class="nav-topic-header" onclick="toggleTopic('topic-regresi')">
+                <span class="topic-dot done"></span>
+                <span class="topic-name">Regresi</span>
+                <span class="topic-arrow">▾</span>
+              </div>
+              <div class="nav-topic-body">
+                <a class="nav-item active" href="pages/linear-regression.html" data-page="linear-regression">
+                  <span class="item-icon">📈</span>
+                  <span>Regresi Linear Sederhana</span>
+                  <span class="item-status done">✓</span>
+                </a>
+                <a class="nav-item locked" href="#" data-page="polynomial-regression">
+                  <span class="item-icon">📊</span>
+                  <span>Regresi Polinomial</span>
+                  <span class="item-status lock">🔒</span>
+                </a>
+                <a class="nav-item locked" href="#" data-page="logistic-regression">
+                  <span class="item-icon">🔀</span>
+                  <span>Regresi Logistik</span>
+                  <span class="item-status lock">🔒</span>
+                </a>
+              </div>
+            </div>
+
+            <!-- Sub: Klasifikasi -->
+            <div class="nav-topic" id="topic-klasifikasi">
+              <div class="nav-topic-header" onclick="toggleTopic('topic-klasifikasi')">
+                <span class="topic-dot locked"></span>
+                <span class="topic-name">Klasifikasi</span>
+                <span class="topic-arrow">▾</span>
+              </div>
+              <div class="nav-topic-body" style="display:none">
+                <a class="nav-item locked" href="#">
+                  <span class="item-icon">🎯</span>
+                  <span>KNN</span>
+                  <span class="item-status lock">🔒</span>
+                </a>
+                <a class="nav-item locked" href="#">
+                  <span class="item-icon">⚔️</span>
+                  <span>SVM</span>
+                  <span class="item-status lock">🔒</span>
+                </a>
+              </div>
+            </div>
+
+            <!-- Sub: Evaluasi -->
+            <div class="nav-topic" id="topic-evaluasi">
+              <div class="nav-topic-header" onclick="toggleTopic('topic-evaluasi')">
+                <span class="topic-dot locked"></span>
+                <span class="topic-name">Evaluasi Model</span>
+                <span class="topic-arrow">▾</span>
+              </div>
+              <div class="nav-topic-body" style="display:none">
+                <a class="nav-item locked" href="#">
+                  <span class="item-icon">📏</span>
+                  <span>MSE, RMSE, MAE</span>
+                  <span class="item-status lock">🔒</span>
+                </a>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Deep Learning (locked) -->
+        <div class="nav-category" id="cat-dl">
+          <div class="nav-category-header locked" onclick="showLockedMsg()">
+            <span class="cat-icon">🧠</span>
+            <span class="cat-name">Deep Learning</span>
+            <span class="cat-arrow">▾</span>
+            <span class="cat-badge locked-badge">LOCKED</span>
+          </div>
+        </div>
+
+        <!-- Statistika (locked) -->
+        <div class="nav-category" id="cat-stats">
+          <div class="nav-category-header locked" onclick="showLockedMsg()">
+            <span class="cat-icon">📐</span>
+            <span class="cat-name">Statistika</span>
+            <span class="cat-arrow">▾</span>
+            <span class="cat-badge locked-badge">LOCKED</span>
+          </div>
+        </div>
+
+      </nav>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content" id="mainContent">
+
+    <!-- Hero / Dashboard -->
+    <div class="dashboard">
+
+      <div class="dashboard-hero">
+        <div class="hero-text">
+          <h1 class="hero-title">
+            Selamat Datang di<br />
+            <span class="gradient-text">LearnLab</span>
+          </h1>
+          <p class="hero-sub">Belajar Machine Learning seperti main game — interaktif, visual, dan seru.</p>
+          <a href="pages/linear-regression.html" class="btn-start">
+            <span class="btn-icon">▶</span> Mulai Petualangan
+          </a>
+        </div>
+        <div class="hero-graphic">
+          <canvas id="heroChart" style="width:100%;height:auto;"></canvas>
+        </div>
+      </div>
+
+      <!-- Progress Cards -->
+      <div class="progress-section">
+        <h2 class="section-title">📊 Progress Belajar</h2>
+        <div class="cards-grid">
+          <div class="progress-card active-card" onclick="window.location='pages/linear-regression.html'">
+            <div class="card-header">
+              <span class="card-icon">📈</span>
+              <span class="card-status in-progress">IN PROGRESS</span>
+            </div>
+            <h3 class="card-title">Regresi Linear Sederhana</h3>
+            <p class="card-desc">Pahami fondasi ML paling krusial dengan grafik interaktif dan turunan rumus lengkap.</p>
+            <div class="card-progress">
+              <div class="card-progress-bar">
+                <div class="card-progress-fill" style="width: 60%"></div>
+              </div>
+              <span class="card-progress-text">60%</span>
+            </div>
+            <div class="card-tags">
+              <span class="tag">Grafik Dinamis</span>
+              <span class="tag">Matematika</span>
+              <span class="tag">Gradient Descent</span>
+            </div>
+          </div>
+
+          <div class="progress-card locked-card">
+            <div class="card-header">
+              <span class="card-icon">📊</span>
+              <span class="card-status locked-status">🔒 LOCKED</span>
+            </div>
+            <h3 class="card-title">Regresi Polinomial</h3>
+            <p class="card-desc">Selesaikan Regresi Linear dulu untuk membuka materi ini.</p>
+          </div>
+
+          <div class="progress-card locked-card">
+            <div class="card-header">
+              <span class="card-icon">🎯</span>
+              <span class="card-status locked-status">🔒 LOCKED</span>
+            </div>
+            <h3 class="card-title">KNN Classifier</h3>
+            <p class="card-desc">Klasifikasi data dengan algoritma tetangga terdekat.</p>
+          </div>
+
+          <div class="progress-card locked-card">
+            <div class="card-header">
+              <span class="card-icon">🧠</span>
+              <span class="card-status locked-status">🔒 LOCKED</span>
+            </div>
+            <h3 class="card-title">Neural Network Dasar</h3>
+            <p class="card-desc">Masuk ke dunia Deep Learning setelah menguasai fondasi ML.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Row -->
+      <div class="stats-row">
+        <div class="stat-box">
+          <span class="stat-num" id="statTopics">1</span>
+          <span class="stat-label">Materi Aktif</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-num">12</span>
+          <span class="stat-label">Total Materi</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-num" id="statXP">350</span>
+          <span class="stat-label">Total XP</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-num">3</span>
+          <span class="stat-label">Level Saat Ini</span>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast"></div>
+
+  <!-- Overlay for mobile sidebar -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+  <script src="js/main.js"></script>
+  <script src="js/particles.js"></script>
+  <script src="js/hero-chart.js"></script>
+</body>
+</html>
