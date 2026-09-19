@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8"/>
@@ -902,77 +902,55 @@
 <script src="../js/multiple-regression.js"></script>
 <script src="../js/mlr-math.js"></script>
 <script src="../js/mlr-diagnostics.js"></script>
-<script src="../js/lesson-logic.js"></script>
 <script>
-// MLR-specific tab config — override lesson-logic constants
-const TAB_ORDER   = ['konsep','model','asumsi','derivasi','visual3d','koefisien','evaluasi','quiz'];
-const TAB_SECTIONS= {konsep:'sec-konsep',model:'sec-model',asumsi:'sec-asumsi',derivasi:'sec-derivasi',
-  visual3d:'sec-visual3d',koefisien:'sec-koefisien',evaluasi:'sec-evaluasi',quiz:'sec-quiz'};
-const TAB_XP      = {konsep:10,model:15,asumsi:15,derivasi:30,visual3d:25,koefisien:25,evaluasi:25,quiz:30};
-const TAB_LABELS  = {konsep:'Konsep',model:'Model',asumsi:'Asumsi',derivasi:'Derivasi OLS',
-  visual3d:'Visualisasi 3D',koefisien:'Koefisien',evaluasi:'Evaluasi',quiz:'Quiz'};
-
-// Override switchTab to init MLR canvases
-const _origSwitch = window.switchTab;
-window.switchTab = function(tabId, skipSave) {
-  _origSwitch && _origSwitch(tabId, skipSave);
-  if (tabId==='konsep'    && !window._mlrCompInit)  { window._mlrCompInit=true;  initMLRComp(); }
-  if (tabId==='model'     && !window._mlrScaleInit) { window._mlrScaleInit=true; initMLRScale(); }
-  if (tabId==='derivasi'  && !window._mlrMxInit)    { window._mlrMxInit=true;    initMLRMatrix(); }
-  if (tabId==='visual3d'  && !window._mlr3dInit)    { window._mlr3dInit=true;    initMLR3D(); window.awardBadge&&awardBadge('ach2','3D Explorer'); }
-  if (tabId==='koefisien' && !window._mlrCfInit)    { window._mlrCfInit=true;    initMLRCoeff(); initPrediction(); }
-  if (tabId==='evaluasi'  && !window._mlrDxInit)    {
-    window._mlrDxInit=true;
-    initMLRResidPlot(); initMLRQQ(); initMLRVIF(); initMLRHomo();
-    window.awardBadge&&awardBadge('ach3','Diagnostician');
-  }
+/* ── MLR Page Config: MUST load before lesson-logic.js ── */
+window.PAGE_STORAGE_KEY = 'learnlab_mlr_progress';
+window.PAGE_QUIZ_TOTAL  = 6;
+window.PAGE_TAB_ORDER   = ['konsep','model','asumsi','derivasi','visual3d','koefisien','evaluasi','quiz'];
+window.PAGE_TAB_SECTIONS = {
+  konsep:'sec-konsep', model:'sec-model', asumsi:'sec-asumsi',
+  derivasi:'sec-derivasi', visual3d:'sec-visual3d', koefisien:'sec-koefisien',
+  evaluasi:'sec-evaluasi', quiz:'sec-quiz'
 };
-
-// Prediction tool
-function initPrediction(){
-  const r=window.mlrOLS(window.MLR_DATA);
-  window._mlrFitResult=r;
-  document.getElementById('koefB0').textContent=r.b0.toFixed(3);
-  document.getElementById('koefB1').textContent=r.b1.toFixed(3);
-  document.getElementById('koefB2').textContent=r.b2.toFixed(3);
-  updatePrediction();
-}
-window.updatePrediction=function(){
-  const r=window._mlrFitResult;
-  if(!r) return;
-  const x1=parseFloat(document.getElementById('predX1').value);
-  const x2=parseFloat(document.getElementById('predX2').value);
-  document.getElementById('predX1Val').textContent=x1;
-  document.getElementById('predX2Val').textContent=x2;
+window.PAGE_TAB_XP = {
+  konsep:10, model:15, asumsi:15, derivasi:30,
+  visual3d:25, koefisien:25, evaluasi:25, quiz:30
+};
+window.PAGE_TAB_LABELS = {
+  konsep:'Konsep', model:'Model', asumsi:'Asumsi', derivasi:'Derivasi OLS',
+  visual3d:'Visualisasi 3D', koefisien:'Koefisien', evaluasi:'Evaluasi', quiz:'Quiz'
+};
+window.getQuizExplanation = function(qId){
+  const e={
+    q1:'y-hat = 10 + 3(5) - 2(4) = 10+15-8 = 17.',
+    q2:'Interpretasi "ceteris paribus" - efek x_j saat semua fitur lain dianggap tetap.',
+    q3:'Normal equation OLS: beta = (X\'X)^{-1} X\'y.',
+    q4:'Adjusted R2 memberikan penalti untuk setiap fitur yang ditambahkan agar tidak overfit.',
+    q5:'VIF = 8.5 artinya variansi estimasi koefisien membesar 8.5x - multikolinearitas sedang.',
+    q6:'Kolom 1 berisi semua angka 1 supaya intercept b0 bisa dimasukkan ke formula matrix.'
+  };
+  return e[qId]||'';
+};
+window.updatePrediction = function(){
+  const r = window._mlrFitResult; if(!r) return;
+  const x1=parseFloat((document.getElementById('predX1')||{value:65}).value);
+  const x2=parseFloat((document.getElementById('predX2')||{value:5}).value);
+  const se=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  se('predX1Val',x1); se('predX2Val',x2);
   const pred=r.b0+r.b1*x1+r.b2*x2;
-  document.getElementById('predResult').textContent=pred.toFixed(1)+' juta Rp';
+  se('predResult',pred.toFixed(1)+' juta Rp');
   const s2=r.b2>=0?'+':'-';
-  document.getElementById('predFormula').textContent=
-    'y = '+r.b0.toFixed(1)+' + '+r.b1.toFixed(2)+'x'+x1+' '+s2+' '+Math.abs(r.b2).toFixed(2)+'x'+x2+' = '+pred.toFixed(1);
+  se('predFormula','y = '+r.b0.toFixed(1)+' + '+r.b1.toFixed(2)+'('+x1+') '+s2+' '+Math.abs(r.b2).toFixed(2)+'('+x2+') = '+pred.toFixed(1));
 };
-
-// Init konsep tab on load
-document.addEventListener('DOMContentLoaded',()=>{
-  // init metrics shown in konsep
-  const r=window.mlrOLS(window.MLR_DATA);
-  // SLR mse
-  const D=window.MLR_DATA,n=D.length;
-  const mx1=D.reduce((s,p)=>s+p.x1,0)/n,mY=D.reduce((s,p)=>s+p.y,0)/n;
-  let num=0,den=0;D.forEach(p=>{num+=(p.x1-mx1)*(p.y-mY);den+=(p.x1-mx1)**2;});
-  const sb1=num/den,sb0=mY-sb1*mx1;
-  const slrMSE=D.reduce((s,p)=>s+(p.y-(sb1*p.x1+sb0))**2,0)/n;
-  const el1=document.getElementById('compSLRMSE');if(el1)el1.textContent=slrMSE.toFixed(2);
-  const el2=document.getElementById('compMLRMSE');if(el2)el2.textContent=r.mse.toFixed(2);
-  const el3=document.getElementById('compImprovement');
-  if(el3)el3.textContent=(((slrMSE-r.mse)/slrMSE)*100).toFixed(1)+'%';
-  // Metrics in evaluasi
+window.initPrediction = function(){
+  const r=window._mlrFitResult||window.mlrOLS(window.MLR_DATA);
   window._mlrFitResult=r;
-  const el4=document.getElementById('mlrOptR2');if(el4)el4.textContent=r.r2.toFixed(4);
-  const el5=document.getElementById('mlrOptR2adj');if(el5)el5.textContent=r.r2adj.toFixed(4);
-  const el6=document.getElementById('mlrOptRMSE');if(el6)el6.textContent=r.rmse.toFixed(3);
-  const el7=document.getElementById('mlrOptMAE');if(el7)el7.textContent=r.mae.toFixed(3);
-  const el8=document.getElementById('mlrOptMSE');if(el8)el8.textContent=r.mse.toFixed(3);
-});
+  const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  set('koefB0',r.b0.toFixed(3)); set('koefB1',r.b1.toFixed(3)); set('koefB2',r.b2.toFixed(3));
+  window.updatePrediction();
+};
 </script>
+<script src="../js/lesson-logic.js"></script>
+
 </body>
 </html>

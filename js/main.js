@@ -111,6 +111,27 @@ function showXPGain(amount) {
   el.classList.add('animate');
 }
 
+// ---- Auto-detect active nav item from URL ----
+document.addEventListener('DOMContentLoaded', () => {
+  const path = window.location.pathname.toLowerCase();
+  document.querySelectorAll('.nav-item[href]').forEach(item => {
+    const href = item.getAttribute('href').toLowerCase();
+    if (href && href !== '#') {
+      const pageName = href.replace(/.*\//, '').replace('.html','');
+      const isActive = path.includes(pageName) || (path.endsWith('/') && pageName === 'index');
+      if (isActive) {
+        item.classList.add('active');
+        item.classList.remove('locked');
+      } else {
+        item.classList.remove('active');
+      }
+    }
+  });
+
+  // Also init sliders
+  document.querySelectorAll('input[type=range]').forEach(updateSliderBg);
+});
+
 // ---- Range slider track fill ----
 function updateSliderBg(slider) {
   const min = parseFloat(slider.min) || 0;
@@ -121,7 +142,4 @@ function updateSliderBg(slider) {
 }
 document.addEventListener('input', e => {
   if (e.target.type === 'range') updateSliderBg(e.target);
-});
-document.addEventListener('DOMContentLoaded', () => {
-  document.querySelectorAll('input[type=range]').forEach(updateSliderBg);
 });
