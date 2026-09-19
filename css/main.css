@@ -428,12 +428,15 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   .hero-graphic { display: none; }
   .stats-row { grid-template-columns: repeat(2, 1fr); }
 }
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .sidebar { transform: translateX(-100%); }
   .sidebar.open { transform: translateX(0); }
   .sidebar-overlay.show { display: block; }
   .main-content { margin-left: 0; padding: 20px; }
   .main-content.expanded { margin-left: 0; }
+}
+
+@media (max-width: 768px) {
   .hero-title { font-size: 26px; }
   .cards-grid { grid-template-columns: 1fr; }
 }
@@ -495,4 +498,118 @@ button:focus-visible, a:focus-visible, input:focus-visible {
   outline: 2px solid var(--accent-cyan);
   outline-offset: 2px;
   border-radius: 4px;
+}
+
+/* ===================================================
+   MOBILE RESPONSIVE — main.css
+   Breakpoints: 768px, 600px, 480px, 375px
+   =================================================== */
+
+/* ── 768px ── */
+@media (max-width: 768px) {
+  :root { --topbar-h: 52px; }
+
+  /* Topbar: hide XP label text, shrink */
+  .topbar { padding: 0 12px; gap: 8px; }
+  .logo-text { font-size: 15px; letter-spacing: 1px; }
+  .xp-label { display: none; }
+  .xp-val   { display: none; }
+  .xp-bar-wrap { gap: 6px; }
+  .player-badge { padding: 5px 10px; gap: 5px; }
+  .player-name  { font-size: 12px; }
+  .player-level { font-size: 11px; }
+
+  /* Sidebar: full width overlay on mobile */
+  .sidebar {
+    width: min(280px, 88vw);
+    transform: translateX(-100%);
+  }
+  .sidebar.open { transform: translateX(0); }
+
+  /* Main content: no left margin */
+  .main-content { margin-left: 0; padding: 16px; }
+
+  /* Dashboard hero */
+  .dashboard-hero { padding: 24px 0 32px; gap: 24px; }
+  .hero-title { font-size: 24px; }
+  .hero-sub   { font-size: 15px; }
+  .btn-start  { padding: 12px 22px; font-size: 13px; }
+
+  /* Stats */
+  .stats-row { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .stat-num   { font-size: 24px; }
+  .stat-label { font-size: 12px; }
+
+  /* Cards */
+  .cards-grid { grid-template-columns: 1fr; gap: 14px; }
+
+  /* Nav items: bigger touch targets */
+  .nav-item {
+    padding: 11px 16px;
+    min-height: 44px;
+  }
+  .nav-category-header,
+  .nav-topic-header {
+    padding: 12px 20px;
+    min-height: 44px;
+  }
+
+  /* Toast: full width at bottom */
+  .toast {
+    left: 12px; right: 12px; bottom: 16px;
+    font-size: 13px; padding: 10px 14px;
+  }
+}
+
+/* ── 600px ── */
+@media (max-width: 600px) {
+  /* Topbar: center XP bar takes less space */
+  .topbar-center { max-width: none; }
+  .xp-bar { height: 6px; }
+  .logo-text { font-size: 14px; }
+}
+
+/* ── 480px ── */
+@media (max-width: 480px) {
+  :root { --topbar-h: 50px; }
+
+  /* Topbar: hide player name */
+  .player-name { display: none; }
+  .player-badge { padding: 5px 8px; }
+  .logo-icon { font-size: 18px; }
+  .logo-text { font-size: 13px; }
+
+  /* Sidebar: nearly full width */
+  .sidebar { width: min(280px, 92vw); }
+
+  /* Dashboard: tighter */
+  .main-content { padding: 12px; }
+  .dashboard-hero { padding: 18px 0 24px; }
+  .hero-title { font-size: 20px; line-height: 1.3; }
+  .hero-sub   { font-size: 14px; }
+
+  /* Stats: 2 col smaller */
+  .stats-row { gap: 8px; }
+  .stat-box  { padding: 14px 10px; }
+  .stat-num  { font-size: 20px; }
+
+  /* Cards: tighter */
+  .progress-card { padding: 14px; }
+  .card-title    { font-size: 14px; }
+  .card-desc     { font-size: 12px; }
+
+  /* XP bar: show compact version */
+  .topbar-center { display: flex; min-width: 0; flex: 1; }
+  .xp-bar-wrap   { gap: 4px; }
+}
+
+/* ── 375px (iPhone SE etc.) ── */
+@media (max-width: 375px) {
+  .logo-text      { display: none; }
+  .logo-icon      { font-size: 20px; }
+  .player-badge   { display: none; }
+  .main-content   { padding: 10px; }
+  .hero-title     { font-size: 18px; }
+  .stats-row      { grid-template-columns: 1fr 1fr; gap: 6px; }
+  .stat-num       { font-size: 18px; }
 }

@@ -28,9 +28,10 @@ const sidebarToggle = document.getElementById('sidebarToggle');
 const sidebarOverlay = document.getElementById('sidebarOverlay');
 
 function toggleSidebar() {
-  if (window.innerWidth <= 768) {
+  // Di mobile/tablet: overlay drawer
+  if (window.innerWidth <= 900) {
     sidebar.classList.toggle('open');
-    sidebarOverlay.classList.toggle('show');
+    if (sidebarOverlay) sidebarOverlay.classList.toggle('show');
   } else {
     sidebar.classList.toggle('collapsed');
     if (mainContent) mainContent.classList.toggle('expanded');
@@ -38,8 +39,16 @@ function toggleSidebar() {
 }
 function closeSidebar() {
   sidebar.classList.remove('open');
-  sidebarOverlay.classList.remove('show');
+  if (sidebarOverlay) sidebarOverlay.classList.remove('show');
 }
+
+// Close sidebar on resize jika kembali ke desktop
+window.addEventListener('resize', () => {
+  if (window.innerWidth > 900) {
+    sidebar.classList.remove('open');
+    if (sidebarOverlay) sidebarOverlay.classList.remove('show');
+  }
+});
 if (sidebarToggle) sidebarToggle.addEventListener('click', toggleSidebar);
 
 // ---- Category Toggle ----

@@ -617,3 +617,326 @@ canvas { max-width:100%; display:block; }
 .opt-section.opt-visible { display: block; }
 .ng-section { display: none; }
 .ng-section.ng-visible { display: block; }
+
+/* ===================================================
+   MOBILE RESPONSIVE — lesson.css
+   Breakpoints: 900px, 768px, 600px, 480px, 375px
+   =================================================== */
+
+/* ── 900px (already handled above, extend) ── */
+@media (max-width: 900px) {
+  .lesson-body { padding: 24px 28px; gap: 20px; }
+  .lp-canvas-grid { grid-template-columns: 1fr; }
+  .pso-analogy    { grid-template-columns: 1fr; }
+  .opt-compare-grid { grid-template-columns: 1fr; }
+  .pso-controls-grid { grid-template-columns: 1fr 1fr; }
+}
+
+/* ── Lesson content: no left margin on mobile/tablet ── */
+@media (max-width: 900px) {
+  .lesson-content { margin-left: 0; }
+}
+
+/* ── 768px ── */
+@media (max-width: 768px) {
+  /* Lesson content: no left margin */
+  .lesson-content { margin-left: 0; }
+
+  /* Hero */
+  .lesson-hero    { padding: 20px 16px 18px; }
+  .lesson-title   { font-size: 20px; }
+  .lesson-subtitle { font-size: 13px; }
+  .lesson-meta    { gap: 12px; flex-wrap: wrap; }
+  .lesson-meta-item { font-size: 12px; }
+  .breadcrumb     { font-size: 12px; gap: 5px; }
+
+  /* Chapter tabs */
+  .chapter-tabs   { padding: 0 10px; }
+  .chapter-tab    {
+    padding: 10px 10px;
+    font-size: 11px;
+    min-height: 44px;
+    gap: 4px;
+  }
+  .tab-num { width: 18px; height: 18px; font-size: 9px; }
+
+  /* Lesson body */
+  .lesson-body    { padding: 16px; grid-template-columns: 1fr; gap: 16px; }
+  .lesson-sidebar { display: none; } /* Sidebar TOC hidden on mobile */
+
+  /* Concept blocks */
+  .concept-block  { padding: 16px; margin-bottom: 16px; }
+  .concept-title  { font-size: 11px; }
+  .concept-text   { font-size: 14px; }
+
+  /* Formula */
+  .formula-block  { padding: 16px 14px; }
+  .formula-title  { font-size: 10px; }
+
+  /* Derivation */
+  .derivation-box { padding: 16px; }
+  .derivation-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .deriv-controls { flex-wrap: wrap; gap: 6px; }
+  .deriv-btn {
+    padding: 8px 14px;
+    font-size: 12px;
+    min-height: 40px;
+  }
+
+  /* Steps */
+  .d-step { gap: 10px; padding: 12px 0; }
+  .step-badge { width: 26px; height: 26px; font-size: 10px; flex-shrink: 0; }
+  .step-label { font-size: 13px; }
+  .step-note  { font-size: 12px; padding: 6px 10px; }
+
+  /* Two col graphs → single */
+  .two-col-graph  { grid-template-columns: 1fr; gap: 12px; }
+  .sp1-grid       { grid-template-columns: 1fr; }
+
+  /* Symbol grid → 2 col */
+  .symbol-grid    { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .sym            { font-size: 18px; }
+
+  /* Info grid → 2 col */
+  .graph-info-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .info-val        { font-size: 14px; }
+  .lp-info-grid    { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .lp-info-val     { font-size: 14px; }
+
+  /* Slider controls */
+  .slider-grid     { grid-template-columns: 1fr; gap: 12px; }
+  .gd-controls-grid { grid-template-columns: 1fr; }
+  .pso-controls-grid { grid-template-columns: 1fr; }
+
+  /* Slider thumb: bigger touch target */
+  input[type=range]::-webkit-slider-thumb {
+    width: 22px; height: 22px;
+  }
+
+  /* GD buttons */
+  .gd-btn-row  { flex-wrap: wrap; gap: 8px; }
+  .btn-gd      { padding: 10px 16px; font-size: 12px; min-height: 40px; flex: 1; text-align: center; }
+
+  /* Quiz options: bigger tap area */
+  .quiz-opt { padding: 13px 14px; min-height: 44px; font-size: 13px; }
+
+  /* Mode buttons */
+  .mode-btn   { padding: 8px 12px; font-size: 12px; min-height: 40px; }
+  .mode-switcher { flex-wrap: wrap; gap: 6px; }
+  .ctrl-btn   { min-height: 40px; }
+
+  /* Prev/next nav */
+  .lesson-nav { gap: 8px; padding: 18px 0 6px; }
+  .btn-nav    { padding: 10px 14px; font-size: 13px; min-width: 0; flex: 1; text-align: center; }
+
+  /* Algo block */
+  .algo-block { font-size: 12px; padding: 10px 12px; overflow-x: auto; }
+  .algo-indent { padding-left: 16px; }
+
+  /* GD log */
+  .gd-log { height: 90px; font-size: 10px; }
+
+  /* Data table */
+  .data-table   { font-size: 12px; }
+  .data-table th, .data-table td { padding: 6px 8px; }
+
+  /* Method tabs */
+  .method-tabs  { flex-wrap: wrap; }
+  .method-tab   { font-size: 13px; padding: 9px 14px; min-height: 40px; }
+
+  /* Metric props */
+  .metric-props { gap: 6px; }
+  .prop         { font-size: 11px; padding: 4px 8px; }
+
+  /* Assumption list */
+  .assumption-item { padding: 10px; }
+  .asm-icon        { font-size: 18px; }
+
+  /* Info chips */
+  .info-chips { gap: 6px; }
+  .chip       { font-size: 11px; padding: 4px 8px; }
+}
+
+/* ── 600px ── */
+@media (max-width: 600px) {
+  /* Optimizer sub-tabs: horizontal scroll instead of stack */
+  .opt-subtabs {
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 4px;
+    gap: 4px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .opt-subtabs::-webkit-scrollbar { display: none; }
+  .opt-subtab {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    padding: 9px 14px;
+    font-size: 12px;
+    min-height: 40px;
+  }
+
+  /* Non-gradient tabs */
+  .ng-tabs     { flex-wrap: wrap; }
+  .ng-tab      { font-size: 12px; padding: 8px 14px; min-height: 40px; }
+
+  /* LP controls */
+  .lp-controls-bar { padding: 12px 14px; gap: 12px; }
+  .lp-label    { min-width: 70px; font-size: 11px; }
+  .lp-val      { font-size: 13px; min-width: 36px; }
+
+  /* PSO legend */
+  .pso-legend  { gap: 8px; padding: 8px 10px; }
+  .pso-legend-item { font-size: 11px; }
+
+  /* Compare grid */
+  .opt-compare-grid { grid-template-columns: 1fr; }
+
+  /* TOC box: smaller */
+  .toc-box     { padding: 12px; }
+  .toc-link    { font-size: 12px; padding: 6px 8px; min-height: 36px; }
+}
+
+/* ── 480px ── */
+@media (max-width: 480px) {
+  /* Hero */
+  .lesson-hero   { padding: 14px 14px 14px; }
+  .lesson-title  { font-size: 17px; }
+  .lesson-subtitle { font-size: 12px; }
+  .breadcrumb    { font-size: 11px; }
+
+  /* Chapter tabs: even smaller */
+  .chapter-tabs  { padding: 0 6px; }
+  .chapter-tab   { padding: 9px 8px; font-size: 10px; gap: 3px; }
+  .tab-num       { display: none; } /* Hide number circles on tiny screens */
+
+  /* Lesson body */
+  .lesson-body   { padding: 12px 10px; }
+  .concept-block { padding: 12px; }
+  .concept-title { font-size: 10px; }
+  .concept-text  { font-size: 13px; }
+
+  /* Info grid → single column on very small */
+  .graph-info-grid { grid-template-columns: 1fr 1fr; gap: 6px; }
+  .info-box   { padding: 8px 10px; }
+  .info-label { font-size: 10px; }
+  .info-val   { font-size: 13px; }
+
+  /* Derivation buttons: full-width rows */
+  .deriv-btn  { padding: 9px 10px; font-size: 11px; }
+  .deriv-counter { font-size: 10px; }
+
+  /* Symbol grid: single col */
+  .symbol-grid { grid-template-columns: 1fr 1fr; gap: 6px; }
+  .symbol-item { padding: 10px; }
+  .sym         { font-size: 16px; }
+  .sym-desc    { font-size: 11px; }
+
+  /* Slider label */
+  .ctrl-label { font-size: 11px; }
+  .lp-label   { font-size: 10px; min-width: 60px; }
+
+  /* GD controls: slider rows */
+  .gd-ctrl-group { gap: 3px; }
+
+  /* Optimizer sub-tab buttons */
+  .opt-subtab { padding: 8px 10px; font-size: 11px; }
+
+  /* Quiz */
+  .quiz-box    { padding: 14px; }
+  .quiz-title  { font-size: 10px; }
+  .quiz-question { font-size: 13px; }
+  .quiz-opt    { padding: 11px 12px; font-size: 12px; }
+
+  /* Algo block */
+  .algo-block  { font-size: 11px; }
+  .algo-line   { margin: 2px 0; }
+
+  /* Prev/next */
+  .btn-nav { padding: 9px 12px; font-size: 12px; }
+
+  /* Metric props */
+  .prop { font-size: 10px; padding: 3px 6px; }
+
+  /* PSO analogy grid */
+  .pso-analogy { grid-template-columns: 1fr; }
+  .pso-analogy-item { padding: 10px; }
+
+  /* Step note */
+  .step-note { font-size: 11px; }
+  .lr-case   { font-size: 12px; padding: 8px 10px; }
+
+  /* Formula block */
+  .formula-block { padding: 12px 10px; }
+  .katex         { font-size: 1em !important; }
+
+  /* Graph container */
+  .graph-container { padding: 14px 12px; }
+  .graph-title     { font-size: 10px; }
+  .graph-hint      { font-size: 11px; }
+}
+
+/* ── 375px ── */
+@media (max-width: 375px) {
+  .lesson-title  { font-size: 15px; }
+  .chapter-tab   { padding: 8px 6px; font-size: 9px; }
+  .concept-block { padding: 10px; }
+  .concept-text  { font-size: 12px; line-height: 1.7; }
+  .lesson-body   { padding: 10px 8px; }
+
+  /* Single col info grid */
+  .graph-info-grid { grid-template-columns: 1fr 1fr; }
+  .lp-info-grid    { grid-template-columns: 1fr 1fr; }
+
+  /* Btn gd full row */
+  .btn-gd { font-size: 11px; padding: 9px 10px; }
+  .btn-nav { font-size: 11px; }
+  .deriv-btn { font-size: 10px; padding: 8px 8px; }
+
+  /* XP popup smaller */
+  .xp-popup { font-size: 16px; }
+}
+
+/* ── Touch: make range thumb much larger on touch devices ── */
+@media (hover: none) and (pointer: coarse) {
+  input[type=range] {
+    height: 10px;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    width: 28px;
+    height: 28px;
+    box-shadow: 0 0 8px rgba(0,212,255,0.6);
+  }
+  /* Bigger tap targets on touch */
+  .deriv-btn    { min-height: 44px; }
+  .quiz-opt     { min-height: 48px; }
+  .nav-item     { min-height: 48px; }
+  .chapter-tab  { min-height: 44px; }
+  .ctrl-btn     { min-height: 44px; }
+  .btn-gd       { min-height: 44px; }
+  .mode-btn     { min-height: 44px; }
+  .opt-subtab   { min-height: 44px; }
+  .ng-tab       { min-height: 44px; }
+}
+
+/* ── Horizontal scroll shadow hint for tabs ── */
+.chapter-tabs {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.chapter-tabs::-webkit-scrollbar { display: none; }
+
+/* ── Prevent KaTeX overflow on mobile ── */
+.katex-display { overflow-x: auto; overflow-y: hidden; padding: 4px 0; }
+
+/* ── Canvas always fit container ── */
+canvas { max-width: 100% !important; touch-action: none; }
+
+/* ── Overflow guard ── */
+.content-main, .concept-block, .formula-block,
+.derivation-box, .graph-container, .quiz-box {
+  overflow-x: hidden;
+}
+.step-formula, .algo-block { overflow-x: auto; }

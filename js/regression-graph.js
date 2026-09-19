@@ -34,7 +34,9 @@
     const container = canvas.parentElement;
     const cw = Math.min(container.clientWidth - 2, 720);
     canvas.width = cw;
-    canvas.height = Math.round(cw * 0.52);
+    // taller on mobile for better readability
+    const hRatio = window.innerWidth <= 600 ? 0.75 : 0.52;
+    canvas.height = Math.round(cw * hRatio);
     W = canvas.width; H = canvas.height;
     PW = W - PAD.left - PAD.right;
     PH = H - PAD.top - PAD.bottom;

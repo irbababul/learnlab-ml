@@ -3,7 +3,14 @@
    5 sub-tabs: 1-param | 2-param (loss plane) | GD | non-gradient | PSO
    =================================================== */
 
-/* ── Shared dataset & utilities ─────────────────── */
+/* ── Mobile-aware canvas sizing helper ── */
+function _canvasW(parent, maxW) {
+  const w = (parent ? parent.clientWidth : window.innerWidth) - 2;
+  return Math.min(w, maxW || 720);
+}
+function _isMobile() { return window.innerWidth <= 600; }
+
+
 const OPT_DATA = [
   {x:0.5,y:4.2},{x:1.0,y:4.8},{x:1.5,y:5.9},{x:2.0,y:6.5},{x:2.5,y:8.1},
   {x:3.0,y:8.7},{x:3.5,y:9.6},{x:4.0,y:10.5},{x:4.5,y:11.2},{x:5.0,y:12.3},
@@ -67,11 +74,15 @@ function _roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(
   const B1_MIN=-1, B1_MAX=4;
 
   function resize(){
-    const pw=cvMain.parentElement.clientWidth-2;
-    cvMain.width=Math.min(pw,680); cvMain.height=Math.round(Math.min(pw,680)*0.42);
-    const pw2=cvLine.parentElement.clientWidth-2;
-    cvLine.width=Math.min(pw2,680); cvLine.height=Math.round(Math.min(pw2,680)*0.38);
-    W1=cvMain.width;H1=cvMain.height;W2=cvLine.width;H2=cvLine.height;
+    const pw  = _canvasW(cvMain.parentElement, 680);
+    const pw2 = _canvasW(cvLine.parentElement, 680);
+    // taller ratio on mobile so plots are readable
+    const hRatio = _isMobile() ? 0.62 : 0.42;
+    const lRatio = _isMobile() ? 0.56 : 0.38;
+    cvMain.width=pw;  cvMain.height=Math.round(pw*hRatio);
+    cvLine.width=pw2; cvLine.height=Math.round(pw2*lRatio);
+    W1=cvMain.width; H1=cvMain.height;
+    W2=cvLine.width; H2=cvLine.height;
   }
 
   /* ── J(b1) parabola curve ── */
@@ -279,13 +290,20 @@ function _roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(
   let rot3d=0.4, dragging3d=false, lastX3d=0, autoRot=false, rotId=null;
 
   function resize(){
-    const pw2=Math.min(cv2d.parentElement.clientWidth-2,500);
-    cv2d.width=pw2; cv2d.height=Math.round(pw2*0.88);
-    const pw3=Math.min(cv3d.parentElement.clientWidth-2,500);
-    cv3d.width=pw3; cv3d.height=Math.round(pw3*0.84);
-    W2=cv2d.width;H2=cv2d.height; W3=cv3d.width;H3=cv3d.height;
-    if(cv1d){const pw1=Math.min(cv1d.parentElement.clientWidth-2,680);
-      cv1d.width=pw1;cv1d.height=Math.round(pw1*.36);W1=cv1d.width;H1=cv1d.height;}
+    const pw2=_canvasW(cv2d.parentElement, 500);
+    const pw3=_canvasW(cv3d.parentElement, 500);
+    const h2ratio = _isMobile() ? 1.05 : 0.88;
+    const h3ratio = _isMobile() ? 1.0  : 0.84;
+    cv2d.width=pw2; cv2d.height=Math.round(pw2*h2ratio);
+    cv3d.width=pw3; cv3d.height=Math.round(pw3*h3ratio);
+    W2=cv2d.width; H2=cv2d.height;
+    W3=cv3d.width; H3=cv3d.height;
+    if(cv1d){
+      const pw1=_canvasW(cv1d.parentElement, 680);
+      const h1ratio = _isMobile() ? 0.52 : 0.36;
+      cv1d.width=pw1; cv1d.height=Math.round(pw1*h1ratio);
+      W1=cv1d.width; H1=cv1d.height;
+    }
   }
 
   const PAD2={t:32,r:24,b:52,l:60};
@@ -588,10 +606,12 @@ function _roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(
   const OPT_B1=OPT_OPTIMAL.b1, OPT_B0=OPT_OPTIMAL.b0;
 
   function resize(){
-    const cw=Math.min(gdCv.parentElement.clientWidth-2,720);
-    gdCv.width=cw; gdCv.height=Math.round(cw*.5);
-    lossCv.width=cw; lossCv.height=Math.round(cw*.22);
-    W=gdCv.width;H=gdCv.height;LW=lossCv.width;LH=lossCv.height;
+    const cw=_canvasW(gdCv.parentElement, 720);
+    const lossH = _isMobile() ? 0.38 : 0.22;  // taller loss curve on mobile
+    gdCv.width=cw;   gdCv.height=Math.round(cw*0.5);
+    lossCv.width=cw; lossCv.height=Math.round(cw*lossH);
+    W=gdCv.width; H=gdCv.height;
+    LW=lossCv.width; LH=lossCv.height;
   }
   const xMin=0,xMax=11,yMin=0,yMax=25;
   const tCx=x=>PAD.left+(x-xMin)/(xMax-xMin)*(W-PAD.left-PAD.right);
@@ -784,7 +804,7 @@ function _roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(
   let gridN=8, running=false, animId=null;
   let cells=[], best=null, idx=0, done=false;
 
-  function resize(){const cw=Math.min(canvas.parentElement.clientWidth-2,680);canvas.width=cw;canvas.height=Math.round(cw*.72);W=canvas.width;H=canvas.height;}
+  function resize(){const cw=_canvasW(canvas.parentElement,680);canvas.width=cw;canvas.height=Math.round(cw*(_isMobile()?0.95:0.72));W=canvas.width;H=canvas.height;}
   const PW=()=>W-PAD.l-PAD.r, PH=()=>H-PAD.t-PAD.b;
   const tCxB0=b0=>PAD.l+(b0-BND.b0.min)/(BND.b0.max-BND.b0.min)*PW();
   const tCyB1=b1=>PAD.t+(1-(b1-BND.b1.min)/(BND.b1.max-BND.b1.min))*PH();
@@ -882,7 +902,7 @@ function _roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(
   let nSamples=100, running=false, animId=null;
   let samples=[], best=null, idx=0, done=false;
 
-  function resize(){const cw=Math.min(canvas.parentElement.clientWidth-2,680);canvas.width=cw;canvas.height=Math.round(cw*.72);W=canvas.width;H=canvas.height;}
+  function resize(){const cw=_canvasW(canvas.parentElement,680);canvas.width=cw;canvas.height=Math.round(cw*(_isMobile()?0.95:0.72));W=canvas.width;H=canvas.height;}
   const PW=()=>W-PAD.l-PAD.r;
   const tCxB0=b0=>PAD.l+(b0-BND.b0.min)/(BND.b0.max-BND.b0.min)*PW();
   const tCyB1=b1=>PAD.t+(1-(b1-BND.b1.min)/(BND.b1.max-BND.b1.min))*(H-PAD.t-PAD.b);
@@ -966,7 +986,7 @@ function _roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(
   let particles=[], gBest=null, iter=0, done=false, running=false, animId=null;
   const TRAIL=18;
 
-  function resize(){const cw=Math.min(canvas.parentElement.clientWidth-2,680);canvas.width=cw;canvas.height=Math.round(cw*.8);W=canvas.width;H=canvas.height;}
+  function resize(){const cw=_canvasW(canvas.parentElement,680);canvas.width=cw;canvas.height=Math.round(cw*(_isMobile()?1.1:0.8));W=canvas.width;H=canvas.height;}
   const PW=()=>W-PAD.l-PAD.r, PH=()=>H-PAD.t-PAD.b;
   const tCxB0=b0=>PAD.l+(b0-BND.b0.min)/(BND.b0.max-BND.b0.min)*PW();
   const tCyB1=b1=>PAD.t+(1-(b1-BND.b1.min)/(BND.b1.max-BND.b1.min))*PH();

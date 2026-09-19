@@ -37,8 +37,9 @@
   function resize(){
     const container=gdCanvas.parentElement;
     const cw=Math.min(container.clientWidth-2,720);
+    const isMob=window.innerWidth<=600;
     gdCanvas.width=cw; gdCanvas.height=Math.round(cw*0.5);
-    lossCanvas.width=cw; lossCanvas.height=Math.round(cw*0.22);
+    lossCanvas.width=cw; lossCanvas.height=Math.round(cw*(isMob?0.38:0.22));
     W=gdCanvas.width; H=gdCanvas.height;
     LW=lossCanvas.width; LH=lossCanvas.height;
     PW=W-PAD.left-PAD.right; PH=H-PAD.top-PAD.bottom;
