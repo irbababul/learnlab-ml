@@ -66,7 +66,38 @@
       .metrics-table th, .metrics-table td { padding:5px 8px; }
       .live-metric   { font-size:16px; }
       .mlr-highlight, .mlr-warn, .mlr-success { padding:10px 12px; font-size:13px; }
+      .asm-header    { flex-direction:column; align-items:flex-start; gap:10px; }
+      .sol-charts    { grid-template-columns:1fr; }
     }
+
+    /* ── Assumption blocks ── */
+    .asm-block { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); margin-bottom:16px; overflow:hidden; transition:border-color .3s; }
+    .asm-block:hover { border-color:rgba(0,212,255,.3); }
+    .asm-header { display:flex; align-items:flex-start; gap:16px; padding:18px 20px; flex-wrap:wrap; }
+    .asm-num { flex-shrink:0; width:36px; height:36px; border-radius:50%; background:rgba(0,212,255,.12); border:1.5px solid rgba(0,212,255,.4); display:flex; align-items:center; justify-content:center; font-family:"Orbitron",monospace; font-size:14px; font-weight:700; color:var(--accent-cyan); }
+    .asm-info { flex:1; min-width:0; }
+    .asm-title { font-family:"Orbitron",monospace; font-size:12px; font-weight:700; color:var(--text-primary); margin-bottom:6px; }
+    .asm-desc  { font-size:13px; color:var(--text-secondary); line-height:1.6; margin-bottom:8px; }
+    .asm-detect { display:flex; flex-wrap:wrap; gap:6px; }
+    .asm-tag { font-size:11px; padding:3px 9px; border-radius:10px; background:rgba(255,255,255,.05); border:1px solid var(--border); color:var(--text-muted); }
+    .asm-tag.detect { background:rgba(0,212,255,.08); border-color:rgba(0,212,255,.25); color:var(--accent-cyan); }
+    .btn-sol { flex-shrink:0; padding:8px 14px; border-radius:8px; background:rgba(139,92,246,.12); border:1px solid rgba(139,92,246,.35); color:var(--accent-purple); font-family:"Rajdhani",sans-serif; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap; transition:all .2s; align-self:flex-start; }
+    .btn-sol:hover { background:rgba(139,92,246,.22); }
+    .sol-panel { display:none; border-top:1px solid var(--border); background:rgba(0,0,0,.12); }
+    .sol-content { padding:20px 24px; }
+    .sol-title { font-family:"Orbitron",monospace; font-size:11px; font-weight:700; color:var(--accent-purple); letter-spacing:1px; margin-bottom:16px; }
+    .sol-methods { display:flex; flex-direction:column; gap:12px; margin-bottom:20px; }
+    .sol-method { background:rgba(255,255,255,.03); border:1px solid var(--border); border-radius:8px; padding:12px 16px; }
+    .sol-method-name { font-family:"Orbitron",monospace; font-size:10px; font-weight:700; color:var(--accent-cyan); margin-bottom:6px; }
+    .sol-method p { font-size:13px; color:var(--text-secondary); line-height:1.6; margin-bottom:8px; }
+    .sol-method p:last-child { margin-bottom:0; }
+    .sol-code { font-family:"Share Tech Mono",monospace; font-size:11px; background:rgba(0,0,0,.3); border-radius:6px; padding:8px 12px; color:var(--accent-green); border:1px solid rgba(16,185,129,.2); white-space:pre; overflow-x:auto; }
+    .sol-charts { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:16px; }
+    .sol-chart-wrap { display:flex; flex-direction:column; gap:6px; }
+    .sol-chart-label { font-size:11px; font-weight:700; padding:4px 10px; border-radius:6px; text-align:center; }
+    .sol-chart-label.bad  { background:rgba(239,68,68,.12);  color:var(--accent-red);   border:1px solid rgba(239,68,68,.25); }
+    .sol-chart-label.good { background:rgba(16,185,129,.12); color:var(--accent-green); border:1px solid rgba(16,185,129,.25); }
+    .sol-slider-row { display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap; }
   </style>
 </head>
 <body>
@@ -358,76 +389,274 @@
   <!-- ══════════════════════════════════════
        TAB 3 — ASUMSI
        ══════════════════════════════════════ -->
-  <div class="content-section" id="sec-asumsi">
+    <div class="content-section" id="sec-asumsi">
 
     <div class="concept-block">
       <div class="concept-title">📋 ASUMSI MLR — GAUSS-MARKOV THEOREM</div>
       <p class="concept-text">
-        OLS estimator adalah <strong>BLUE (Best Linear Unbiased Estimator)</strong> jika asumsi berikut terpenuhi.
-        Asumsi ini wajib diperiksa setelah model difit!
+        OLS estimator adalah <strong>BLUE (Best Linear Unbiased Estimator)</strong> jika semua asumsi berikut terpenuhi.
+        Klik tombol <strong>"Lihat Solusi"</strong> di setiap asumsi untuk melihat cara mendeteksi pelanggaran
+        beserta <em>grafik interaktif before/after</em>!
       </p>
     </div>
 
-    <div class="assumption-list">
-      <div class="assumption-item">
-        <span class="asm-icon">1️⃣</span>
-        <div>
-          <strong>Linearitas</strong> — hubungan antara fitur dan target memang linear.<br>
-          <span style="font-size:12px;color:var(--text-muted);">Cek: scatter plot residual vs fitted. Jika ada pola kurva → tidak linear.</span>
+    <!-- ════ ASUMSI 1: LINEARITAS ════ -->
+    <div class="asm-block" id="asm-lin">
+      <div class="asm-header">
+        <div class="asm-num">1</div>
+        <div class="asm-info">
+          <div class="asm-title">Linearitas</div>
+          <p class="asm-desc">Hubungan antara setiap fitur $x_j$ dan target $y$ harus linear.</p>
+          <div class="asm-detect">
+            <span class="asm-tag detect">Deteksi: Residual vs Fitted plot — tidak boleh ada pola kurva</span>
+          </div>
+        </div>
+        <button class="btn-sol" id="btn-sol-lin" onclick="toggleAsmSolution('lin')">Lihat Solusi &amp; Contoh Interaktif ▼</button>
+      </div>
+      <div class="sol-panel" id="sol-lin">
+        <div class="sol-content">
+          <div class="sol-title">🔧 SOLUSI — PELANGGARAN LINEARITAS</div>
+          <div class="sol-methods">
+            <div class="sol-method"><div class="sol-method-name">1. Polynomial Features</div><p>Tambahkan $x^2$, $x^3$ sebagai fitur baru. Model tetap "linear" dalam parameter tapi non-linear dalam fitur.</p><div class="sol-code">df['luas2'] = df['luas']**2<br>model.fit(X[['luas','luas2']], y)</div></div>
+            <div class="sol-method"><div class="sol-method-name">2. Transformasi Log/Sqrt</div><p>Jika plot menunjukkan hubungan eksponensial, coba $\ln(x)$ atau $\sqrt{x}$ sebagai fitur.</p><div class="sol-code">df['log_luas'] = np.log(df['luas'])<br>model.fit(X[['log_luas']], y)</div></div>
+            <div class="sol-method"><div class="sol-method-name">3. Interaction Terms</div><p>Tambahkan $x_1 \cdot x_2$ jika efek satu fitur bergantung pada nilai fitur lain.</p><div class="sol-code">df['luas_x_jarak'] = df['luas']*df['jarak']</div></div>
+          </div>
+          <div class="sol-charts">
+            <div class="sol-chart-wrap">
+              <div class="sol-chart-label bad">Sebelum (linear fit pada data kuadratik)</div>
+              <canvas id="asmLinBefore" style="width:100%;height:auto;border-radius:8px;"></canvas>
+            </div>
+            <div class="sol-chart-wrap">
+              <div class="sol-chart-label good">Sesudah (tambah fitur x²)</div>
+              <canvas id="asmLinAfter" style="width:100%;height:auto;border-radius:8px;"></canvas>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="assumption-item">
-        <span class="asm-icon">2️⃣</span>
-        <div>
-          <strong>Independensi Residual</strong> — error antar observasi tidak saling berkorelasi.<br>
-          <span style="font-size:12px;color:var(--text-muted);">Cek: Durbin-Watson test. Penting untuk data time series.</span>
+    </div>
+
+    <!-- ════ ASUMSI 2: INDEPENDENSI ════ -->
+    <div class="asm-block" id="asm-indep">
+      <div class="asm-header">
+        <div class="asm-num">2</div>
+        <div class="asm-info">
+          <div class="asm-title">Independensi Residual</div>
+          <p class="asm-desc">Error antar observasi tidak boleh saling berkorelasi (tidak ada autokorelasi).</p>
+          <div class="asm-detect">
+            <span class="asm-tag detect">Deteksi: ACF plot residual — bar di lag 1+ tidak boleh melebihi batas kepercayaan</span>
+            <span class="asm-tag">Durbin-Watson test: nilai ~2 = OK, jauh dari 2 = masalah</span>
+          </div>
+        </div>
+        <button class="btn-sol" id="btn-sol-indep" onclick="toggleAsmSolution('indep')">Lihat Solusi &amp; Contoh Interaktif ▼</button>
+      </div>
+      <div class="sol-panel" id="sol-indep">
+        <div class="sol-content">
+          <div class="sol-title">🔧 SOLUSI — AUTOKORELASI</div>
+          <div class="sol-methods">
+            <div class="sol-method"><div class="sol-method-name">1. Tambah Lag Variable</div><p>Jika data time series, tambahkan nilai $y_{t-1}$ sebagai fitur (autoregressive term).</p><div class="sol-code">df['y_lag1'] = df['y'].shift(1)<br>model.fit(X[['x1','y_lag1']], y)</div></div>
+            <div class="sol-method"><div class="sol-method-name">2. Differencing</div><p>Gunakan selisih ($\Delta y = y_t - y_{t-1}$) sebagai target baru untuk menghilangkan trend.</p><div class="sol-code">df['dy'] = df['y'].diff()<br># Fit model pada dy, bukan y</div></div>
+            <div class="sol-method"><div class="sol-method-name">3. Newey-West Standard Errors</div><p>Jika autokorelasi tidak bisa dihilangkan, gunakan robust standard errors yang memperhitungkan autokorelasi.</p></div>
+          </div>
+          <div class="sol-charts">
+            <div class="sol-chart-wrap">
+              <div class="sol-chart-label bad">ACF Residual — Ada Autokorelasi</div>
+              <canvas id="asmIndepBefore" style="width:100%;height:auto;border-radius:8px;"></canvas>
+            </div>
+            <div class="sol-chart-wrap">
+              <div class="sol-chart-label good">ACF Setelah Differencing — Independen</div>
+              <canvas id="asmIndepAfter" style="width:100%;height:auto;border-radius:8px;"></canvas>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="assumption-item">
-        <span class="asm-icon">3️⃣</span>
-        <div>
-          <strong>Homoscedasticity</strong> — variansi error konstan untuk semua nilai fitted.<br>
-          <span style="font-size:12px;color:var(--text-muted);">Cek: scale-location plot. Jika ada corong/kerucut → heteroscedastic.</span>
+    </div>
+
+    <!-- ════ ASUMSI 3: HOMOSCEDASTICITY ════ -->
+    <div class="asm-block" id="asm-homo">
+      <div class="asm-header">
+        <div class="asm-num">3</div>
+        <div class="asm-info">
+          <div class="asm-title">Homoscedasticity</div>
+          <p class="asm-desc">Variansi error $\sigma^2$ konstan untuk semua nilai fitted. Kebalikannya disebut <em>heteroscedasticity</em>.</p>
+          <div class="asm-detect">
+            <span class="asm-tag detect">Deteksi: Scale-location plot — titik melebar seiring fitted values naik</span>
+            <span class="asm-tag">Breusch-Pagan test / White test</span>
+          </div>
+        </div>
+        <button class="btn-sol" id="btn-sol-homo" onclick="toggleAsmSolution('homo')">Lihat Solusi &amp; Contoh Interaktif ▼</button>
+      </div>
+      <div class="sol-panel" id="sol-homo">
+        <div class="sol-content">
+          <div class="sol-title">🔧 SOLUSI — HETEROSCEDASTICITY</div>
+          <div class="sol-slider-row">
+            <label style="font-size:12px;color:var(--text-muted);">Tingkat Heteroscedasticity:</label>
+            <input type="range" id="asmHomoSlider" min="0.5" max="4" step="0.1" value="1.5" oninput="updateAsmHomo(this.value)" style="flex:1;"/>
+            <span id="asmHomoSevVal" style="font-family:monospace;color:var(--accent-cyan);font-size:13px;">1.5</span>
+          </div>
+          <div class="sol-methods">
+            <div class="sol-method"><div class="sol-method-name">1. Transformasi Log(y)</div><p>Paling umum — jika varians tumbuh bersama mean, $\ln(y)$ sering menstabilkan varians. <em>Catatan: interpretasi koefisien berubah menjadi efek persentase.</em></p><div class="sol-code">df['log_harga'] = np.log(df['harga'])<br>model.fit(X, df['log_harga'])</div></div>
+            <div class="sol-method"><div class="sol-method-name">2. Weighted Least Squares (WLS)</div><p>Beri bobot $w_i = 1/\hat{\sigma}_i^2$ pada setiap observasi. Observasi dengan error besar diberi bobot kecil.</p><div class="sol-code">from sklearn... # Gunakan statsmodels WLS<br>model = sm.WLS(y, X, weights=1/variance_est)</div></div>
+            <div class="sol-method"><div class="sol-method-name">3. Robust Standard Errors</div><p>Gunakan HC3 heteroscedasticity-consistent standard errors (White's correction) tanpa mengubah koefisien.</p></div>
+          </div>
+          <div class="sol-charts">
+            <div class="sol-chart-wrap">
+              <div class="sol-chart-label bad">Sebelum — Residual melebar (corong)</div>
+              <canvas id="asmHomoBefore" style="width:100%;height:auto;border-radius:8px;"></canvas>
+            </div>
+            <div class="sol-chart-wrap">
+              <div class="sol-chart-label good">Sesudah Log Transform — Varians stabil</div>
+              <canvas id="asmHomoAfter" style="width:100%;height:auto;border-radius:8px;"></canvas>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="assumption-item">
-        <span class="asm-icon">4️⃣</span>
-        <div>
-          <strong>Normalitas Residual</strong> — error terdistribusi normal $e_i \sim \mathcal{N}(0, \sigma^2)$.<br>
-          <span style="font-size:12px;color:var(--text-muted);">Cek: Q-Q plot. Titik harus mendekati garis diagonal lurus.</span>
+    </div>
+
+    <!-- ════ ASUMSI 4: NORMALITAS RESIDUAL ════ -->
+    <div class="asm-block" id="asm-norm">
+      <div class="asm-header">
+        <div class="asm-num">4</div>
+        <div class="asm-info">
+          <div class="asm-title">Normalitas Residual</div>
+          <p class="asm-desc">Error terdistribusi normal: $e_i \sim \mathcal{N}(0, \sigma^2)$. Diperlukan untuk inference (p-value, confidence interval) yang valid.</p>
+          <div class="asm-detect">
+            <span class="asm-tag detect">Deteksi: Q-Q plot — titik harus mengikuti garis diagonal</span>
+            <span class="asm-tag">Shapiro-Wilk test (n kecil) / Kolmogorov-Smirnov test</span>
+          </div>
+        </div>
+        <button class="btn-sol" id="btn-sol-norm" onclick="toggleAsmSolution('norm')">Lihat Solusi &amp; Contoh Interaktif ▼</button>
+      </div>
+      <div class="sol-panel" id="sol-norm">
+        <div class="sol-content">
+          <div class="sol-title">🔧 SOLUSI — NON-NORMALITAS RESIDUAL</div>
+          <div class="sol-slider-row">
+            <label style="font-size:12px;color:var(--text-muted);">Tingkat Skewness:</label>
+            <input type="range" id="asmNormSkew" min="0.2" max="3" step="0.1" value="1" oninput="updateAsmNorm(this.value)" style="flex:1;"/>
+            <span id="asmNormSkewVal" style="font-family:monospace;color:var(--accent-cyan);font-size:13px;">1.0</span>
+          </div>
+          <div class="sol-methods">
+            <div class="sol-method"><div class="sol-method-name">1. Box-Cox Transformation</div><p>Cari nilai $\lambda$ optimal yang memaksimalkan normalitas: $y^{(\lambda)} = (y^\lambda - 1)/\lambda$. $\lambda=0$ = log transform, $\lambda=0.5$ = sqrt. Referensi: <a href="https://online.stat.psu.edu/stat462/node/156/" target="_blank" style="color:var(--accent-cyan);">PSU STAT 462</a></p><div class="sol-code">from scipy import stats<br>yt, lam = stats.boxcox(y)<br>print(f'lambda optimal: {lam:.3f}')</div></div>
+            <div class="sol-method"><div class="sol-method-name">2. Tambah Lebih Banyak Data</div><p>Dengan n besar, Central Limit Theorem berlaku — koefisien OLS tetap valid meski residual tidak normal sempurna. n > 30 biasanya cukup.</p></div>
+            <div class="sol-method"><div class="sol-method-name">3. Robust Regression</div><p>Gunakan M-estimator (Huber loss) yang kurang sensitif terhadap outlier dan distribusi non-normal.</p><div class="sol-code">from statsmodels.robust.robust_linear_model import RLM<br>model = RLM(y, X, M=sm.robust.norms.HuberT())</div></div>
+          </div>
+          <div class="sol-charts">
+            <div class="sol-chart-wrap">
+              <div class="sol-chart-label bad">Q-Q Plot — Residual Skewed</div>
+              <canvas id="asmNormBefore" style="width:100%;height:auto;border-radius:8px;"></canvas>
+            </div>
+            <div class="sol-chart-wrap">
+              <div class="sol-chart-label good">Q-Q Plot — Setelah Box-Cox</div>
+              <canvas id="asmNormAfter" style="width:100%;height:auto;border-radius:8px;"></canvas>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="assumption-item">
-        <span class="asm-icon">5️⃣</span>
-        <div>
-          <strong>Tidak Ada Multikolinearitas</strong> — fitur-fitur tidak berkorelasi terlalu tinggi satu sama lain.<br>
-          <span style="font-size:12px;color:var(--text-muted);">Cek: VIF (Variance Inflation Factor). VIF > 10 = masalah serius, VIF > 5 = perlu perhatian.</span>
+    </div>
+
+    <!-- ════ ASUMSI 5: NO MULTICOLLINEARITY ════ -->
+    <div class="asm-block" id="asm-mc">
+      <div class="asm-header">
+        <div class="asm-num">5</div>
+        <div class="asm-info">
+          <div class="asm-title">Tidak Ada Multikolinearitas</div>
+          <p class="asm-desc">Fitur-fitur tidak berkorelasi terlalu tinggi. Multikolinearitas membuat estimasi koefisien tidak stabil (variansi besar).</p>
+          <div class="asm-detect">
+            <span class="asm-tag detect">Deteksi: VIF — nilai > 5 perlu perhatian, > 10 masalah serius</span>
+            <span class="asm-tag">Correlation matrix antar fitur</span>
+          </div>
+        </div>
+        <button class="btn-sol" id="btn-sol-mc" onclick="toggleAsmSolution('mc')">Lihat Solusi &amp; Contoh Interaktif ▼</button>
+      </div>
+      <div class="sol-panel" id="sol-mc">
+        <div class="sol-content">
+          <div class="sol-title">🔧 SOLUSI — MULTIKOLINEARITAS</div>
+          <div class="sol-slider-row">
+            <label style="font-size:12px;color:var(--text-muted);">Korelasi antar fitur (r):</label>
+            <input type="range" id="asmMCSlider" min="0.1" max="0.99" step="0.01" value="0.95" oninput="updateAsmMC(this.value)" style="flex:1;"/>
+            <span id="asmMCCorrVal" style="font-family:monospace;color:var(--accent-cyan);font-size:13px;">0.95</span>
+          </div>
+          <div class="graph-info-grid" style="margin:10px 0;grid-template-columns:1fr 1fr;">
+            <div class="info-box"><div class="info-label">Korelasi r</div><div class="info-val cyan" id="asmMCCorr">0.95</div></div>
+            <div class="info-box"><div class="info-label">VIF</div><div class="info-val" id="asmMCVIF" style="color:var(--accent-red);">—</div></div>
+          </div>
+          <div class="sol-methods">
+            <div class="sol-method"><div class="sol-method-name">1. Hapus Salah Satu Fitur</div><p>Jika dua fitur sangat berkorelasi, hapus yang kurang relevan secara teori. Pilih berdasarkan domain knowledge, bukan hanya statistik.</p></div>
+            <div class="sol-method"><div class="sol-method-name">2. Principal Component Analysis (PCA)</div><p>Transformasi fitur ke komponen ortogonal (tidak berkorelasi). Gunakan komponen pertama k sebagai fitur baru. Referensi: <a href="https://www.statisticssolutions.com/free-resources/directory-of-statistical-analyses/assumptions-of-multiple-linear-regression/" target="_blank" style="color:var(--accent-cyan);">Statistics Solutions</a></p><div class="sol-code">from sklearn.decomposition import PCA<br>pca = PCA(n_components=2)<br>X_pca = pca.fit_transform(X)</div></div>
+            <div class="sol-method"><div class="sol-method-name">3. Ridge Regression (L2)</div><p>Tambahkan penalti $\lambda\|\boldsymbol{\beta}\|^2$ — koefisien "dikerutkan" menuju 0, mengurangi efek multikolinearitas tanpa menghapus fitur.</p><div class="sol-code">from sklearn.linear_model import Ridge<br>model = Ridge(alpha=1.0)<br>model.fit(X, y)</div></div>
+          </div>
+          <div class="sol-charts">
+            <div class="sol-chart-wrap">
+              <div class="sol-chart-label bad">VIF Tinggi — Multikolinearitas</div>
+              <canvas id="asmMCBefore" style="width:100%;height:auto;border-radius:8px;"></canvas>
+            </div>
+            <div class="sol-chart-wrap">
+              <div class="sol-chart-label good">VIF Rendah — Setelah PCA</div>
+              <canvas id="asmMCAfter" style="width:100%;height:auto;border-radius:8px;"></canvas>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="assumption-item">
-        <span class="asm-icon">6️⃣</span>
-        <div>
-          <strong>Tidak Ada Outlier Ekstrem</strong> — observasi ekstrem bisa mendistorsi koefisien.<br>
-          <span style="font-size:12px;color:var(--text-muted);">Cek: Cook's Distance, leverage points.</span>
+    </div>
+
+    <!-- ════ ASUMSI 6: NO INFLUENTIAL OUTLIERS ════ -->
+    <div class="asm-block" id="asm-out">
+      <div class="asm-header">
+        <div class="asm-num">6</div>
+        <div class="asm-info">
+          <div class="asm-title">Tidak Ada Outlier Berpengaruh</div>
+          <p class="asm-desc">Outlier ekstrem dapat mendistorsi koefisien secara signifikan. Bedakan outlier biasa vs <em>high leverage point</em>.</p>
+          <div class="asm-detect">
+            <span class="asm-tag detect">Deteksi: Cook's Distance — nilai > 4/n perlu diinvestigasi</span>
+            <span class="asm-tag">Standardized residual > |3| = outlier</span>
+          </div>
+        </div>
+        <button class="btn-sol" id="btn-sol-out" onclick="toggleAsmSolution('out')">Lihat Solusi &amp; Contoh Interaktif ▼</button>
+      </div>
+      <div class="sol-panel" id="sol-out">
+        <div class="sol-content">
+          <div class="sol-title">🔧 SOLUSI — OUTLIER BERPENGARUH</div>
+          <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;">Geser slider untuk mengubah posisi outlier dan lihat pengaruhnya terhadap garis regresi:</p>
+          <div class="sol-slider-row">
+            <label style="font-size:12px;color:var(--text-muted);">Posisi X outlier:</label>
+            <input type="range" id="asmOutXSlider" min="1" max="11" step="0.2" value="8" oninput="updateAsmOutX(this.value)" style="flex:1;"/>
+            <span id="asmOutXVal" style="font-family:monospace;color:var(--accent-cyan);font-size:13px;">8.0</span>
+          </div>
+          <div class="sol-slider-row" style="margin-top:6px;">
+            <label style="font-size:12px;color:var(--text-muted);">Nilai Y outlier:</label>
+            <input type="range" id="asmOutYSlider" min="5" max="120" step="1" value="90" oninput="updateAsmOutY(this.value)" style="flex:1;"/>
+            <span id="asmOutYVal" style="font-family:monospace;color:var(--accent-cyan);font-size:13px;">90</span>
+          </div>
+          <div class="sol-methods">
+            <div class="sol-method"><div class="sol-method-name">1. Investigasi Dulu</div><p>Jangan langsung hapus! Cek dulu apakah outlier karena <strong>data entry error</strong> (bisa diperbaiki), atau memang observasi valid tapi ekstrem.</p></div>
+            <div class="sol-method"><div class="sol-method-name">2. Hapus Jika Data Error</div><p>Jika terbukti error pengukuran/input, hapus atau koreksi. Dokumentasikan keputusan ini dengan baik.</p></div>
+            <div class="sol-method"><div class="sol-method-name">3. Robust Regression</div><p>Gunakan metode yang kurang sensitif terhadap outlier: <strong>M-estimator</strong>, <strong>RANSAC</strong>, atau <strong>Theil-Sen estimator</strong>.</p><div class="sol-code">from sklearn.linear_model import HuberRegressor, RANSACRegressor<br>model = HuberRegressor(epsilon=1.35)</div></div>
+          </div>
+          <div class="sol-charts">
+            <div class="sol-chart-wrap">
+              <div class="sol-chart-label bad">Dengan Outlier — garis tertarik (merah = true line)</div>
+              <canvas id="asmOutBefore" style="width:100%;height:auto;border-radius:8px;"></canvas>
+            </div>
+            <div class="sol-chart-wrap">
+              <div class="sol-chart-label good">Tanpa Outlier — garis kembali stabil</div>
+              <canvas id="asmOutAfter" style="width:100%;height:auto;border-radius:8px;"></canvas>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
     <div class="mlr-highlight" style="margin-top:16px;">
-      <strong>Tips untuk Pemula:</strong> Asumsi bukan syarat mutlak sebelum fitting — fit dulu modelnya,
-      baru periksa asumsi dari residualnya. Jika asumsi dilanggar, ada cara-cara untuk memperbaikinya
-      (transformasi data, robust regression, dll).
+      <strong>Ingat:</strong> Tidak semua pelanggaran asumsi sama parahnya. Prioritaskan yang paling berdampak
+      pada tujuan analisismu — prediksi atau inference? Untuk prediksi, pelanggaran normalitas sering diabaikan.
+      Untuk inference (p-value, CI), homoscedasticity dan normalitas lebih penting.
     </div>
 
     <div style="text-align:center;margin-top:20px;">
       <button class="btn-nav next" style="display:inline-flex;align-items:center;gap:8px;" onclick="switchTab('derivasi')">Lanjut: Derivasi OLS -></button>
     </div>
-  </div>
 
-  <!-- ══════════════════════════════════════
-       TAB 4 — DERIVASI OLS MATRIX
-       ══════════════════════════════════════ -->
-  <div class="content-section" id="sec-derivasi">
+  </div><!-- end sec-asumsi -->
+<div class="content-section" id="sec-derivasi">
 
     <div class="concept-block">
       <div class="concept-title">📐 ORDINARY LEAST SQUARES — SOLUSI MATRIX</div>
@@ -938,6 +1167,7 @@
 <script src="../js/multiple-regression.js"></script>
 <script src="../js/mlr-math.js"></script>
 <script src="../js/mlr-diagnostics.js"></script>
+<script src="../js/mlr-assumptions.js"></script>
 <script>
 /* ── MLR Page Config: MUST load before lesson-logic.js ── */
 window.PAGE_STORAGE_KEY = 'learnlab_mlr_progress';
