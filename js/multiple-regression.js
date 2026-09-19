@@ -50,7 +50,10 @@ window.mlrOLS = function(data) {
   }
   const beta=[0,0,0];
   for(let r=2;r>=0;r--){
-    beta[r]=(M[r][3]-M[r][r+1]*beta[r+1]-M[r][r+2]*beta[r+2])/M[r][r];
+    // correct back-substitution: subtract all already-solved unknowns
+    let sum=M[r][3];
+    for(let c=r+1;c<3;c++) sum-=M[r][c]*beta[c];
+    beta[r]=sum/M[r][r];
   }
   const [b0,b1,b2]=beta;
   const preds=data.map(p=>b0+b1*p.x1+b2*p.x2);
@@ -221,13 +224,15 @@ window.mlrOLS = function(data) {
   window.mlr3dTogglePlane=()=>{showPlane=!showPlane;draw();};
   window.mlr3dToggleResiduals=()=>{showResiduals=!showResiduals;draw();};
 
+  // Cache ybar (constant for fixed dataset)
+  const _ybar = MLR_DATA.reduce((s,p)=>s+p.y,0)/MLR_DATA.length;
+  const _ssTot = MLR_DATA.reduce((s,p)=>s+(p.y-_ybar)**2,0);
+
   function syncSliders(){
-    const r=mlrOLS(D);
-    const mse=D.reduce((s,p)=>s+(p.y-(b0+b1*p.x1+b2*p.x2))**2,0)/D.length;
-    const ybar=r.ybar;
-    const ssTot=D.reduce((s,p)=>s+(p.y-ybar)**2,0);
+    const n=D.length;
+    const mse=D.reduce((s,p)=>s+(p.y-(b0+b1*p.x1+b2*p.x2))**2,0)/n;
     const ssRes=D.reduce((s,p)=>s+(p.y-(b0+b1*p.x1+b2*p.x2))**2,0);
-    const r2=1-ssRes/ssTot;
+    const r2=_ssTot>0?1-ssRes/_ssTot:0;
     _setElMLR('mlrLiveMSE',mse.toFixed(2));
     _setElMLR('mlrLiveR2',r2.toFixed(4));
     _setElMLR('mlrLiveRMSE',Math.sqrt(mse).toFixed(2));
@@ -255,14 +260,18 @@ window.mlrOLS = function(data) {
 
   window.initMLR3D=function(){
     resize();
-    // Set OLS values as default
     const r=mlrOLS(D);
-    b0=Math.round(r.b0*10)/10; b1=Math.round(r.b1*100)/100; b2=Math.round(r.b2*100)/100;
+    // Round to each slider's step to avoid label/position mismatch
+    b0=Math.round(r.b0*2)/2;     // step 0.5
+    b1=Math.round(r.b1*20)/20;   // step 0.05
+    b2=Math.round(r.b2*20)/20;   // step 0.05
+    const steps=[0.5,0.05,0.05];
     ['B0','B1','B2'].forEach((s,i)=>{
       const sl=document.getElementById('mlr'+s+'Slider');
       const v=[b0,b1,b2][i];
-      if(sl){sl.value=v.toFixed(2);}
-      _setElMLR('mlr'+s+'Val',[b0,b1,b2][i].toFixed(2));
+      const dec=steps[i]<0.1?2:1;
+      if(sl){sl.value=v.toFixed(dec);}
+      _setElMLR('mlr'+s+'Val', v.toFixed(2));
     });
     updateMLRMetrics(r); syncSliders();
     autoRot=true; startAutoRot(); draw(); initDone=true;

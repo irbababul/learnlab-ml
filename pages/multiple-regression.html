@@ -12,25 +12,61 @@
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
     onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
   <style>
-    /* MLR-specific extras */
+    /* ── MLR highlight boxes ── */
     .mlr-highlight { background:rgba(0,212,255,0.07); border:1px solid rgba(0,212,255,0.2); border-radius:8px; padding:14px 18px; margin:14px 0; }
     .mlr-warn      { background:rgba(245,158,11,0.07); border:1px solid rgba(245,158,11,0.25); border-radius:8px; padding:14px 18px; margin:14px 0; }
     .mlr-success   { background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.25); border-radius:8px; padding:14px 18px; margin:14px 0; }
-    .compare-box   { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:16px 0; }
-    .compare-card  { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:16px; }
+
+    /* ── Compare boxes ── */
+    .compare-box  { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:16px 0; }
+    .compare-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:16px; }
     .compare-card h4 { font-family:'Orbitron',monospace; font-size:11px; margin-bottom:10px; }
-    .diag-grid     { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
-    .diag-card     { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:16px; }
-    .diag-title    { font-family:'Orbitron',monospace; font-size:10px; letter-spacing:1px; color:var(--accent-cyan); margin-bottom:10px; }
-    .diag-stat     { display:flex; justify-content:space-between; font-size:13px; margin:5px 0; padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.05); }
-    .diag-val      { font-family:'Share Tech Mono',monospace; font-size:13px; color:var(--accent-cyan); }
-    .matrix-nav    { display:flex; gap:8px; align-items:center; margin:14px 0; flex-wrap:wrap; }
+
+    /* ── Diagnostics grid ── */
+    .diag-grid  { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+    .diag-card  { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:16px; min-height:280px; }
+    .diag-title { font-family:'Orbitron',monospace; font-size:10px; letter-spacing:1px; color:var(--accent-cyan); margin-bottom:10px; }
+    .diag-stat  { display:flex; justify-content:space-between; font-size:13px; margin:5px 0; padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.05); }
+    .diag-val   { font-family:'Share Tech Mono',monospace; font-size:13px; color:var(--accent-cyan); }
+
+    /* ── Matrix navigation ── */
+    .matrix-nav { display:flex; gap:8px; align-items:center; margin:14px 0; flex-wrap:wrap; }
+
+    /* ── Metrics table ── */
     .metrics-table { width:100%; border-collapse:collapse; font-size:13px; }
-    .metrics-table th { background:rgba(0,212,255,0.08); color:var(--accent-cyan); padding:8px 12px; border:1px solid var(--border); font-family:'Orbitron',monospace; font-size:10px; }
+    .metrics-table th { background:rgba(0,212,255,0.08); color:var(--accent-cyan); padding:8px 12px; border:1px solid var(--border); font-family:'Orbitron',monospace; font-size:10px; text-align:left; }
     .metrics-table td { padding:7px 12px; border:1px solid var(--border); color:var(--text-secondary); }
     .metrics-table tr:nth-child(even) td { background:rgba(255,255,255,0.02); }
-    .live-metric   { font-family:'Share Tech Mono',monospace; font-size:20px; font-weight:700; }
-    @media(max-width:768px){ .compare-box,.diag-grid{ grid-template-columns:1fr; } }
+    .live-metric { font-family:'Share Tech Mono',monospace; font-size:20px; font-weight:700; }
+
+    /* ── 3-col responsive grid for visual3d sliders ── */
+    .mlr-3col { grid-template-columns: 1fr 1fr 1fr !important; }
+    /* ── 4-col metrics grid ── */
+    .mlr-4col { grid-template-columns: repeat(4,1fr) !important; }
+
+    /* ── Prediction tool grid ── */
+    .pred-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:14px 0; }
+
+    /* ── Responsive ── */
+    @media(max-width:900px){
+      .compare-box  { grid-template-columns:1fr; }
+      .diag-grid    { grid-template-columns:1fr; }
+      .mlr-3col     { grid-template-columns:1fr 1fr !important; }
+      .mlr-4col     { grid-template-columns:1fr 1fr !important; }
+    }
+    @media(max-width:600px){
+      .mlr-3col     { grid-template-columns:1fr !important; }
+      .pred-grid    { grid-template-columns:1fr; }
+      .diag-card    { min-height:220px; }
+    }
+    @media(max-width:480px){
+      .compare-card  { padding:12px; }
+      .diag-card     { padding:12px; min-height:180px; }
+      .metrics-table { font-size:11px; }
+      .metrics-table th, .metrics-table td { padding:5px 8px; }
+      .live-metric   { font-size:16px; }
+      .mlr-highlight, .mlr-warn, .mlr-success { padding:10px 12px; font-size:13px; }
+    }
   </style>
 </head>
 <body>
@@ -509,7 +545,7 @@
     <!-- Sliders -->
     <div class="graph-container" style="margin-top:16px;">
       <div class="graph-header"><div class="graph-title">🎚️ KENDALI KOEFISIEN — REAL-TIME</div></div>
-      <div class="gd-controls-grid" style="grid-template-columns:1fr 1fr 1fr;">
+      <div class="gd-controls-grid mlr-3col">
         <div class="gd-ctrl-group">
           <div class="ctrl-label">b₀ (intercept) <span id="mlrB0Val" style="color:var(--accent-cyan);font-family:monospace;">—</span></div>
           <input type="range" id="mlrB0Slider" min="20" max="80" step="0.5" value="50" oninput="mlr3dSetB0(this.value)"/>
@@ -590,7 +626,7 @@
     <div class="concept-block">
       <div class="concept-title">🎯 CONTOH PREDIKSI</div>
       <p class="concept-text">Dengan model yang sudah difit, coba prediksi secara interaktif:</p>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0;">
+      <div class="pred-grid">
         <div class="gd-ctrl-group">
           <div class="ctrl-label">Luas (m²): <span id="predX1Val" style="color:var(--accent-cyan);font-family:monospace;">65</span></div>
           <input type="range" id="predX1" min="40" max="95" step="1" value="65" oninput="updatePrediction()"/>
@@ -620,7 +656,7 @@
     <!-- Metrics summary -->
     <div class="concept-block">
       <div class="concept-title">📏 METRIK EVALUASI MLR</div>
-      <div class="graph-info-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px;">
+      <div class="graph-info-grid mlr-4col" style="margin-bottom:16px;">
         <div class="info-box"><div class="info-label">R²</div><div class="info-val cyan" id="mlrOptR2">—</div></div>
         <div class="info-box"><div class="info-label">Adjusted R²</div><div class="info-val green" id="mlrOptR2adj">—</div></div>
         <div class="info-box"><div class="info-label">RMSE</div><div class="info-val purple" id="mlrOptRMSE">—</div></div>

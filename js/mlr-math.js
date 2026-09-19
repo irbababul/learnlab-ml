@@ -117,6 +117,8 @@
     _setElMLR('mlrMatrixTitle',stDesc.title);
   }
 
+  function _setElMLR(id,v){ if(window._setElMLR) window._setElMLR(id,v); else { const e=document.getElementById(id); if(e) e.textContent=v; } }
+
   window.mlrMatrixNext=function(){step=Math.min(3,step+1);draw();};
   window.mlrMatrixPrev=function(){step=Math.max(0,step-1);draw();};
   window.mlrMatrixReset=function(){step=0;draw();};

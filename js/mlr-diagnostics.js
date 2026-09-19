@@ -3,10 +3,21 @@
    Residual plot, Q-Q plot, VIF, Homoscedasticity
    =================================================== */
 
-const _D = window.MLR_DATA;
-
-function _s(id,v){const e=document.getElementById(id);if(e)e.textContent=v;}
-function _roundR(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();}
+// Module-level helpers (safe — unique names)
+const _diagD = () => window.MLR_DATA || [];
+const _s = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
+function _roundR(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y);
+  ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+  ctx.lineTo(x+w,y+h-r);
+  ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  ctx.lineTo(x+r,y+h);
+  ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+  ctx.lineTo(x,y+r);
+  ctx.quadraticCurveTo(x,y,x+r,y);
+  ctx.closePath();
+}
 
 /* ============================================================
    1. RESIDUAL PLOT — residual vs fitted
@@ -25,7 +36,7 @@ function _roundR(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w
     ctx.clearRect(0,0,W,H);
     _roundR(ctx,0,0,W,H,10);ctx.fillStyle='rgba(0,0,0,0.18)';ctx.fill();
     const PW=W-PAD.l-PAD.r, PH=H-PAD.t-PAD.b;
-    const r=mlrOLS(_D);
+    const r=mlrOLS(_diagD());
     const fitted=r.preds, resids=r.residuals;
     const fMin=Math.min(...fitted)-2, fMax=Math.max(...fitted)+2;
     const rMax=Math.max(...resids.map(Math.abs))*1.3;
@@ -108,7 +119,7 @@ function _roundR(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w
     ctx.clearRect(0,0,W,H);
     _roundR(ctx,0,0,W,H,10);ctx.fillStyle='rgba(0,0,0,0.18)';ctx.fill();
     const PW=W-PAD.l-PAD.r, PH=H-PAD.t-PAD.b;
-    const r=mlrOLS(_D);
+    const r=mlrOLS(_diagD());
     const n=r.residuals.length;
     const sorted=[...r.residuals].sort((a,b)=>a-b);
     const mean=sorted.reduce((s,v)=>s+v,0)/n;
@@ -173,24 +184,33 @@ function _roundR(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w
 
   // VIF for feature k = 1/(1-R²_k) where R²_k = R² of regressing x_k on all other x
   function calcVIF(){
-    const n=_D.length;
-    // VIF for x1 (regress x1 on x2)
-    const mx1=_D.reduce((s,p)=>s+p.x1,0)/n, mx2=_D.reduce((s,p)=>s+p.x2,0)/n;
-    let num12=0,den12=0; _D.forEach(p=>{num12+=(p.x2-mx2)*(p.x1-mx1);den12+=(p.x2-mx2)**2;});
-    const b12=den12>0?num12/den12:0;
-    const b02=mx1-b12*mx2;
-    const ssTot1=_D.reduce((s,p)=>s+(p.x1-mx1)**2,0);
-    const ssRes1=_D.reduce((s,p)=>s+(p.x1-(b02+b12*p.x2))**2,0);
-    const r2_1=1-ssRes1/ssTot1;
-    const vif1=r2_1<0.9999?1/(1-r2_1):9999;
-    // VIF for x2 (same by symmetry of simple regression)
-    const ssTot2=_D.reduce((s,p)=>s+(p.x2-mx2)**2,0);
-    const ssRes2=_D.reduce((s,p)=>s+(p.x2-(b02+b12*p.x1))**2,0); // approx
-    const r2_2=1-ssRes2/ssTot2;
-    const vif2=r2_2<0.9999?1/(1-r2_2):9999;
-    // Pearson correlation
-    const corr=den12>0?num12/Math.sqrt(ssTot1*ssTot2):0;
-    return {vif1,vif2,r2_1,r2_2,corr};
+    const n=_diagD().length;
+    const mx1=_diagD().reduce((s,p)=>s+p.x1,0)/n;
+    const mx2=_diagD().reduce((s,p)=>s+p.x2,0)/n;
+
+    // VIF for x1: regress x1 on x2
+    let num12=0, den2=0;
+    _diagD().forEach(p=>{ num12+=(p.x2-mx2)*(p.x1-mx1); den2+=(p.x2-mx2)**2; });
+    const b1_on_2 = den2>0 ? num12/den2 : 0;
+    const b0_1on2 = mx1 - b1_on_2*mx2;
+    const ssTot1  = _diagD().reduce((s,p)=>s+(p.x1-mx1)**2, 0);
+    const ssRes1  = _diagD().reduce((s,p)=>s+(p.x1-(b0_1on2+b1_on_2*p.x2))**2, 0);
+    const r2_1    = ssTot1>0 ? 1-ssRes1/ssTot1 : 0;
+    const vif1    = r2_1<0.9999 ? 1/(1-r2_1) : 9999;
+
+    // VIF for x2: regress x2 on x1 (separate regression, correct direction)
+    let num21=0, den1=0;
+    _diagD().forEach(p=>{ num21+=(p.x1-mx1)*(p.x2-mx2); den1+=(p.x1-mx1)**2; });
+    const b1_on_1 = den1>0 ? num21/den1 : 0;
+    const b0_2on1 = mx2 - b1_on_1*mx1;
+    const ssTot2  = _diagD().reduce((s,p)=>s+(p.x2-mx2)**2, 0);
+    const ssRes2  = _diagD().reduce((s,p)=>s+(p.x2-(b0_2on1+b1_on_1*p.x1))**2, 0);
+    const r2_2    = ssTot2>0 ? 1-ssRes2/ssTot2 : 0;
+    const vif2    = r2_2<0.9999 ? 1/(1-r2_2) : 9999;
+
+    // Pearson correlation (symmetric, same for both)
+    const corr = (ssTot1>0&&ssTot2>0) ? num12/Math.sqrt(ssTot1*ssTot2) : 0;
+    return {vif1, vif2, r2_1, r2_2, corr};
   }
 
   function draw(){
@@ -270,7 +290,7 @@ function _roundR(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w
     ctx.clearRect(0,0,W,H);
     _roundR(ctx,0,0,W,H,10);ctx.fillStyle='rgba(0,0,0,0.18)';ctx.fill();
     const PW=W-PAD.l-PAD.r,PH=H-PAD.t-PAD.b;
-    const r=mlrOLS(_D);
+    const r=mlrOLS(_diagD());
     const sqrtAbsResid=r.residuals.map(e=>Math.sqrt(Math.abs(e)));
     const fMin=Math.min(...r.preds)-2,fMax=Math.max(...r.preds)+2;
     const sMin=0,sMax=Math.max(...sqrtAbsResid)*1.2;
